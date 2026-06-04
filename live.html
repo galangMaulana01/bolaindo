@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+
+<body class="bg-[#0b0c0d] text-white min-h-screen relative pb-10">
+
+  <header class="sticky top-0 z-40 bg-[#0b0c0d]/95 backdrop-blur-md border-b border-gray-900 pt-4 pb-4">
+    <div class="max-w-2xl mx-auto flex items-center justify-between px-4">
+      <div class="flex items-center gap-2.5">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+        </span>
+        <h1 class="text-base font-extrabold tracking-wider text-white uppercase">Live Matches</h1>
+      </div>
+      <button onclick="loadLiveMatches(false)" class="bg-[#1c1d20] hover:bg-gray-800 border border-gray-800 p-2 px-3.5 rounded-full transition-all active:scale-95 flex items-center gap-2 cursor-pointer">
+        <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16 3v5h-5M8 21v-5h5M5 12a7 7 0 0110.34-6.04M19 12a7 7 0 01-10.34 6.04"></path>
+        </svg>
+        <span class="text-xs font-bold text-gray-300">Refresh</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto p-4 mt-2">
+    <div id="loading-state" class="text-center py-12">
+      <div class="w-8 h-8 border-4 border-gray-700 border-t-red-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-sm text-gray-400">Memeriksa pertandingan live...</p>
+    </div>
+    <div id="matches" class="space-y-6 hidden"></div>
+    <div id="empty-state" class="hidden text-center py-16 text-gray-500">
+      <div class="text-4xl mb-3">📡</div>
+      <p class="text-sm font-semibold text-gray-400">Saat ini tidak ada pertandingan live.</p>
+    </div>
+  </main>
+
+<script>
+const apiKey = "20cbd64e90926ce0eefd4b1e9127059d35058c253fb15a1a6b9b66efe131b5c0";
+const data5 = [153, 168, 55, 653, 356];
+
+async function getSelectedLeagues() {
+  const countryIds = [44, 3, 18, 114, 133];
+  let allLeagues = [];
+  for (const countryId of countryIds) {
+    try {
+      const response = await fetch(`https://apiv3.apifootball.com/?action=get_leagues&country_id=${countryId}&APIkey=${apiKey}`);
+      const leagues = await response.json();
+      if (Array.isArray(leagues)) allLeagues.push(...leagues);
+    } catch (e) { }
+  }
+  return allLeagues.filter(league => data5.includes(parseInt(league.league_id))).map(league => ({
+    id: parseInt(league.league_id), name: league.league_name, logo: league.league_logo, country: league.country_name
+  }));
+}
+
+async function getLiveMatchesByLeague(leagueId) {
+  try {
+    const response = await fetch(`https://apiv3.apifootball.com/?action=get_events&league_id=${leagueId}&match_live=1&timezone=Asia/Jakarta&APIkey=${apiKey}`);
+    return await response.json();
+  } catch (e) { return []; }
+}
+
+async function loadLiveMatches(isSilent = false) {
+  const matchesContainer = document.getElementById("matches");
+  const loadingState = document.getElementById("loading-state");
+  const emptyState = document.getElementById("empty-state");
+  
+  if (!isSilent) {
+    matchesContainer.classList.add("hidden");
+    emptyState.classList.add("hidden");
+    loadingState.classList.remove("hidden");
+  }
+  
+  const selectedLeagues = await getSelectedLeagues();
+  const livePromises = selectedLeagues.map(async (league) => {
+    const liveData = await getLiveMatchesByLeague(league.id);
+    let validLiveMatches = [];
+    if (liveData && Array.isArray(liveData) && !liveData.error) {
+      validLiveMatches = liveData.filter(match => {
+        const statusLower = (match.match_status || "").trim().toLowerCase();
+        const isFinished = ["finished", "ft", "aet", "ap", "pen.", "after pen."].includes(statusLower) || statusLower.includes("finish");
+        const isCancelled = ["cancelled", "postponed", "canc", "postp"].includes(statusLower);
+        return !isFinished && !isCancelled;
+      });
+    }
+    return { league, matches: validLiveMatches };
+  });
+
+  const allLiveLeagueMatches = await Promise.all(livePromises);
+  
+  matchesContainer.innerHTML = "";
+  let totalLiveMatches = 0;
+
+  allLiveLeagueMatches.forEach(({ league, matches }) => {
+    if (matches.length === 0) return;
+    totalLiveMatches += matches.length;
+
+    const leagueSection = document.createElement("div");
+    leagueSection.className = "space-y-2 mb-6 scroll-mt-4";
+    
+    let htmlContent = `
+      <div class="flex items-center justify-between py-3 px-2">
+        <div class="flex items-center gap-3">
+          <img src="${league.logo || 'https://placehold.co/40'}" class="w-9 h-9 object-contain rounded-full bg-[#18191b] p-1 border border-gray-800" alt="" />
+          <div>
+            <h2 class="text-[15px] font-bold text-white leading-tight">${league.name}</h2>
+            <p class="text-[12px] text-gray-400 font-normal mt-0.5">${league.country || 'International'}</p>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-2">
+    `;
+
+    htmlContent += matches.map(match => {
+      const statusRaw = match.match_status || "Live";
+      const homeScore = match.match_hometeam_score ?? "0";
+      const awayScore = match.match_awayteam_score ?? "0";
+      
+      let centerDisplay = `
+        <div class="text-center shrink-0 min-w-[75px]">
+          <div class="text-lg font-extrabold tracking-widest text-yellow-400 animate-pulse leading-none">${homeScore} - ${awayScore}</div>
+          <div class="text-[11px] text-red-500 font-bold mt-1.5 flex items-center justify-center gap-1">
+            <span class="inline-block w-1 h-1 bg-red-500 rounded-full animate-ping"></span>
+            <span>${statusRaw}${isNaN(statusRaw) ? '' : "'"}</span>
+          </div>
+        </div>
+      `;
+
+      return `
+        <div onclick="window.location.href='match-detail.html?id=${match.match_id}&league_id=${match.league_id}'" class="flex items-center justify-between p-4.5 bg-gradient-to-r from-red-950/20 to-[#121315] border border-gray-800/60 rounded-xl transition-all cursor-pointer active:scale-[0.98]">
+          <div class="flex items-center gap-3 w-[40%] justify-start">
+            <img src="${match.team_home_badge || 'https://placehold.co/24'}" class="w-6 h-6 object-contain rounded-full bg-gray-900/50 p-0.5 shrink-0" onerror="this.src='🛡️'">
+            <span class="text-[14px] font-bold text-gray-200 truncate text-left">${match.match_hometeam_name}</span>
+          </div>
+          <div class="w-[20%] flex justify-center">${centerDisplay}</div>
+          <div class="flex items-center gap-3 w-[40%] justify-end text-right">
+            <span class="text-[14px] font-bold text-gray-200 truncate text-right">${match.match_awayteam_name}</span>
+            <img src="${match.team_away_badge || 'https://placehold.co/24'}" class="w-6 h-6 object-contain rounded-full bg-gray-900/50 p-0.5 shrink-0" onerror="this.src='⚽'">
+          </div>
+        </div>
+      `;
+    }).join("") + `</div>`;
+
+    leagueSection.innerHTML = htmlContent;
+    matchesContainer.appendChild(leagueSection);
+  });
+
+  if (!isSilent) loadingState.classList.add("hidden");
+  
+  if (totalLiveMatches > 0) {
+    matchesContainer.classList.remove("hidden");
+    if (!isSilent) emptyState.classList.add("hidden");
+  } else {
+    if (!isSilent) {
+      matchesContainer.classList.add("hidden");
+      emptyState.classList.remove("hidden");
+    }
+  }
+}
+
+loadLiveMatches(false);
+
+// Silent refresh otomatis tiap 1 menit
+setInterval(() => {
+  loadLiveMatches(true);
+}, 60000);
+</script>
+
+</body>
+</html>
