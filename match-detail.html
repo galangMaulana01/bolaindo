@@ -12,80 +12,84 @@
       width: 6px;
     }
     ::-webkit-scrollbar-thumb {
-      background: #222;
+      background: #cbd5e1;
       border-radius: 10px;
     }
   </style>
 </head>
 
-<body class="bg-[#0b0c0d] text-[#e3e4e6] min-h-screen">
+<body class="bg-gray-50 text-gray-800 min-h-screen pb-10">
 
-  <header class="bg-gradient-to-b from-red-950/50 via-[#111113] to-[#0b0c0d] pt-6 pb-4 border-b border-gray-900">
-    <div class="max-w-2xl mx-auto px-4">
+  <header class="bg-[url('/benner.png')] aspect-[430/120] pt-6 pb-6">
+    <div class="max-w-3xl mx-auto px-4">
       
       <div class="flex items-center justify-between mb-4">
-        <button onclick="window.history.back()" class="p-2 hover:bg-white/5 rounded-full transition active:scale-95">
-          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <button onclick="window.history.back()" class="p-2 hover:bg-white/10 rounded-full transition active:scale-95">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <span class="text-xs font-semibold tracking-wider text-gray-400 uppercase" id="league-name-header">Match Detail</span>
+        <span class="text-xs font-bold tracking-wider text-white/80 uppercase" id="league-name-header">Match Detail</span>
         <div class="w-10"></div>
       </div>
 
-      <div id="scoreboard-loading" class="text-center py-6 text-sm text-gray-500 animate-pulse">Memuat data pertandingan...</div>
+      <div id="scoreboard-loading" class="text-center py-6 text-sm text-white/60 animate-pulse">Memuat data pertandingan...</div>
       
       <div id="scoreboard-container" class="hidden flex items-center justify-between px-4 py-4">
         <div class="flex flex-col items-center text-center w-[35%]">
-          <img id="home-logo" src="" class="w-16 h-16 object-contain mb-2" alt="">
-          <span id="home-name" class="text-[15px] font-bold text-white line-clamp-2"></span>
+          <div class="bg-white p-2 rounded-full mb-2 shadow-sm">
+            <img id="home-logo" src="" class="w-14 h-14 object-contain" alt="">
+          </div>
+          <span id="home-name" class="text-[14px] font-bold text-white line-clamp-2 leading-tight"></span>
         </div>
 
         <div class="text-center w-[30%]">
-          <div id="match-score" class="text-3xl font-extrabold tracking-widest text-white">0 - 0</div>
-          <div id="match-status" class="text-xs font-semibold text-gray-400 bg-black/40 px-2.5 py-1 rounded-full border border-gray-800/40 inline-block mt-2">Full-Time</div>
+          <div id="match-score" class="text-4xl font-black tracking-widest text-white drop-shadow-md">0 - 0</div>
+          <div id="match-status" class="text-[10px] font-bold text-white bg-white/20 px-3 py-1 rounded-full border border-white/30 inline-block mt-2 tracking-wide uppercase">Full-Time</div>
         </div>
 
         <div class="flex flex-col items-center text-center w-[35%]">
-          <img id="away-logo" src="" class="w-16 h-16 object-contain mb-2" alt="">
-          <span id="away-name" class="text-[15px] font-bold text-white line-clamp-2"></span>
+          <div class="bg-white p-2 rounded-full mb-2 shadow-sm">
+            <img id="away-logo" src="" class="w-14 h-14 object-contain" alt="">
+          </div>
+          <span id="away-name" class="text-[14px] font-bold text-white line-clamp-2 leading-tight"></span>
         </div>
       </div>
 
-      <div id="scorers-summary" class="hidden grid grid-cols-2 gap-4 mt-2 px-2 text-[12px] text-gray-400 border-t border-gray-900/50 pt-3">
-        <div id="home-scorers-list" class="space-y-1 text-left"></div>
-        <div id="away-scorers-list" class="space-y-1 text-right"></div>
+      <div id="scorers-summary" class="hidden grid grid-cols-2 gap-4 mt-4 px-2 text-[12px] text-white/80 border-t border-white/10 pt-3">
+        <div id="home-scorers-list" class="space-y-1 text-left font-medium"></div>
+        <div id="away-scorers-list" class="space-y-1 text-right font-medium"></div>
       </div>
 
     </div>
   </header>
 
-  <nav class="sticky top-0 bg-[#0b0c0d]/90 backdrop-blur-md border-b border-gray-900 z-50">
-    <div class="max-w-2xl mx-auto px-4 py-3 flex gap-2 overflow-x-auto">
-      <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold bg-yellow-400 text-black transition-all">Overview</button>
-      <button onclick="switchTab('events')" id="btn-events" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold bg-[#1c1d20] text-gray-400 hover:text-white transition-all">Events</button>
-      <button onclick="switchTab('stats')" id="btn-stats" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold bg-[#1c1d20] text-gray-400 hover:text-white transition-all">Stats</button>
-      <button onclick="switchTab('lineup')" id="btn-lineup" class="tab-btn px-4 py-1.5 rounded-full text-xs font-bold bg-[#1c1d20] text-gray-400 hover:text-white transition-all">Line-up</button>
+  <nav class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm mt-[-20px] pt-5">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar">
+      <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-[#1C1D5F] text-white transition-all">Overview</button>
+      <button onclick="switchTab('events')" id="btn-events" class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all">Events</button>
+      <button onclick="switchTab('stats')" id="btn-stats" class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all">Stats</button>
+      <button onclick="switchTab('lineup')" id="btn-lineup" class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all">Line-up</button>
     </div>
   </nav>
 
   <main class="max-w-2xl mx-auto p-4 space-y-4">
 
     <section id="tab-overview" class="tab-content space-y-4">
-      <div class="bg-[#141414] border border-gray-900 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider text-[11px]">Match Info</h3>
+      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
+        <h3 class="text-sm font-bold text-[#1C1D5F] mb-3 uppercase tracking-wider text-[11px]">Match Info</h3>
         <div class="space-y-3 text-sm">
-          <div class="flex items-center gap-3 text-gray-300">
-            <span class="text-base shrink-0">🏆</span>
+          <div class="flex items-center gap-3 text-gray-600">
+            <span class="text-base shrink-0 bg-gray-50 p-1.5 rounded-lg border border-gray-100">🏆</span>
             <div>
-              <p id="info-league" class="font-semibold text-white"></p>
+              <p id="info-league" class="font-bold text-gray-900"></p>
               <p id="info-stage" class="text-xs text-gray-500"></p>
             </div>
           </div>
-          <div class="flex items-center gap-3 text-gray-300 border-t border-gray-900 pt-3">
-            <span class="text-base shrink-0">📅</span>
+          <div class="flex items-center gap-3 text-gray-600 border-t border-gray-100 pt-3">
+            <span class="text-base shrink-0 bg-gray-50 p-1.5 rounded-lg border border-gray-100">📅</span>
             <div>
-              <p id="info-date" class="font-semibold text-white"></p>
+              <p id="info-date" class="font-bold text-gray-900"></p>
               <p id="info-time" class="text-xs text-gray-500"></p>
             </div>
           </div>
@@ -93,50 +97,48 @@
       </div>
 
       <div id="h2h-container" class="space-y-3">
-        <div class="bg-[#141414] border border-gray-900 rounded-xl p-4 text-center text-xs text-gray-500 animate-pulse">
+        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4 text-center text-xs text-gray-400 animate-pulse">
           Memuat data Head-to-Head...
         </div>
       </div>
     </section>
 
     <section id="tab-events" class="tab-content hidden space-y-4">
-      <div class="bg-[#141414] border border-gray-900 rounded-xl p-4">
-        <h3 class="text-sm font-bold text-gray-400 mb-4 uppercase tracking-wider text-[11px]">Match Timeline</h3>
-        <div class="relative border-l-2 border-gray-800 ml-4 pl-6 space-y-6" id="timeline-container"></div>
+      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
+        <h3 class="text-sm font-bold text-[#1C1D5F] mb-4 uppercase tracking-wider text-[11px]">Match Timeline</h3>
+        <div class="relative border-l-2 border-gray-200 ml-4 pl-6 space-y-6" id="timeline-container"></div>
       </div>
     </section>
 
     <section id="tab-stats" class="tab-content hidden space-y-5">
       <div id="stats-container" class="space-y-6">
-        <div class="bg-[#141414] border border-gray-900 rounded-xl p-6 text-center text-xs text-gray-500 animate-pulse">
+        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 text-center text-xs text-gray-400 animate-pulse">
           Memuat data statistik pertandingan...
         </div>
       </div>
     </section>
 
     <section id="tab-lineup" class="tab-content hidden space-y-4">
-      <div class="flex justify-between items-center bg-[#141414] border border-gray-900 rounded-xl p-4">
-        <div>
-          <h4 class="text-xs font-bold text-gray-500 uppercase">Pelatih Utama</h4>
-          <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div id="home-coach" class="space-y-2 border-r border-gray-900/50 pr-3"></div>
-            <div id="away-coach" class="space-y-2 pl-3"></div>
-          </div>
+      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
+        <h4 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider mb-3">Pelatih Utama</h4>
+        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <div id="home-coach" class="space-y-2 border-r border-gray-200 pr-3 font-medium text-gray-800"></div>
+          <div id="away-coach" class="space-y-2 pl-3 font-medium text-gray-800 text-right"></div>
         </div>
       </div>
 
-      <div class="bg-[#141414] border border-gray-900 rounded-xl p-4">
-        <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider text-[11px]">Starting Lineups</h3>
+      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
+        <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider mb-3">Starting Lineups</h3>
         <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div id="home-starting-players" class="space-y-2 border-r border-gray-900/50 pr-3"></div>
+          <div id="home-starting-players" class="space-y-2 border-r border-gray-200 pr-3"></div>
           <div id="away-starting-players" class="space-y-2 pl-3"></div>
         </div>
       </div>
 
-      <div class="bg-[#141414] border border-gray-900 rounded-xl p-4">
-        <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider text-[11px]">Substitutes (Cadangan)</h3>
+      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
+        <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider mb-3">Substitutes (Cadangan)</h3>
         <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div id="home-substitute-players" class="space-y-2 border-r border-gray-900/50 pr-3"></div>
+          <div id="home-substitute-players" class="space-y-2 border-r border-gray-200 pr-3"></div>
           <div id="away-substitute-players" class="space-y-2 pl-3"></div>
         </div>
       </div>
@@ -146,13 +148,12 @@
 
 <script>
 const apiKey = "20cbd64e90926ce0eefd4b1e9127059d35058c253fb15a1a6b9b66efe131b5c0";
-
 const urlParams = new URLSearchParams(window.location.search);
 const matchId = urlParams.get('id'); 
 
 async function loadMatchDetails() {
   if (!matchId) {
-    document.body.innerHTML = `<div class="text-center p-20 text-gray-500">ID Pertandingan tidak ditemukan.</div>`;
+    document.body.innerHTML = `<div class="text-center p-20 text-gray-500 font-medium">ID Pertandingan tidak ditemukan.</div>`;
     return;
   }
 
@@ -167,7 +168,6 @@ async function loadMatchDetails() {
       const homeTeamId = matchEvent.match_hometeam_id;
       const awayTeamId = matchEvent.match_awayteam_id;
 
-      // PARALEL REQUEST: Ditambahkan fetch statistik pertandingan
       const [lineupsResponse, h2hResponse, statsResponse] = await Promise.all([
         fetch(`https://apiv3.apifootball.com/?action=get_lineups&match_id=${matchId}&APIkey=${apiKey}`),
         fetch(`https://apiv3.apifootball.com/?action=get_H2H&firstTeamId=${homeTeamId}&secondTeamId=${awayTeamId}&APIkey=${apiKey}`),
@@ -182,7 +182,7 @@ async function loadMatchDetails() {
       renderHeadToHead(h2hData, matchEvent);
       renderStatistics(statsData);
     } else {
-      document.body.innerHTML = `<div class="text-center p-20 text-gray-500">Gagal memuat detail event pertandingan.</div>`;
+      document.body.innerHTML = `<div class="text-center p-20 text-gray-500 font-medium">Gagal memuat detail event pertandingan.</div>`;
     }
   } catch (e) {
     console.error("Error fetching match detail data:", e);
@@ -217,8 +217,8 @@ function renderBaseAndEvents(match) {
   if (match.goalscorer && Array.isArray(match.goalscorer)) {
     match.goalscorer.forEach(g => {
       allEvents.push({ ...g, type: 'goal', minute: parseInt(g.time) || 0 });
-      if (g.home_scorer) homeScorers.push(`${g.home_scorer} (${g.time}')`);
-      if (g.away_scorer) awayScorers.push(`${g.away_scorer} (${g.time}')`);
+      if (g.home_scorer) homeScorers.push(`${g.home_scorer} <span class="text-[10px] text-white/50 ml-1">(${g.time}')</span>`);
+      if (g.away_scorer) awayScorers.push(`<span class="text-[10px] text-white/50 mr-1">(${g.time}')</span> ${g.away_scorer}`);
     });
   }
 
@@ -239,7 +239,7 @@ function renderBaseAndEvents(match) {
       let eventDetail = "";
 
       if (ev.type === 'goal') {
-        eventDetail = `<strong>Gol!</strong> ${ev.home_scorer || ev.away_scorer} ${ev.info ? `(${ev.info})` : ''}`;
+        eventDetail = `<strong class="text-gray-900">Gol!</strong> ${ev.home_scorer || ev.away_scorer} <span class="text-gray-500">${ev.info ? `(${ev.info})` : ''}</span>`;
       } else if (ev.type === 'card') {
         const isYellow = ev.card.toLowerCase().includes("yellow");
         eventIcon = isYellow ? "🟨" : "🟥";
@@ -247,33 +247,32 @@ function renderBaseAndEvents(match) {
       }
 
       const itemHtml = `
-        <div class="relative flex items-center justify-between ${isHome ? 'text-left' : 'flex-row-reverse text-right'}">
-          <span class="absolute -left-[31px] bg-[#0b0c0d] border-2 border-gray-700 w-4 h-4 rounded-full z-10"></span>
-          <div class="w-[85%]">
-            <span class="text-xs font-bold text-gray-500 mr-2 bg-gray-900 px-1.5 py-0.5 rounded border border-gray-800">${ev.time}'</span>
-            <span class="text-sm text-gray-300">${eventDetail}</span>
+        <div class="relative flex items-center justify-between ${isHome ? 'text-left' : 'flex-row-reverse text-right'} py-1">
+          <span class="absolute -left-[31px] bg-white border-2 border-gray-300 w-4 h-4 rounded-full z-10"></span>
+          <div class="w-[85%] flex items-center ${isHome ? 'flex-row' : 'flex-row-reverse'} gap-2">
+            <span class="text-[11px] font-bold text-[#1C1D5F] bg-[#1C1D5F]/10 px-1.5 py-0.5 rounded border border-[#1C1D5F]/20 shadow-sm">${ev.time}'</span>
+            <span class="text-sm text-gray-700">${eventDetail}</span>
           </div>
-          <span class="text-base w-[15%] text-center">${eventIcon}</span>
+          <div class="w-[15%] flex justify-center">
+            <span class="text-xl">${eventIcon}</span>
+          </div>
         </div>
       `;
       timelineContainer.insertAdjacentHTML("beforeend", itemHtml);
     });
   } else {
-    timelineContainer.innerHTML = `<p class="text-xs text-gray-500 py-2">Tidak ada log kronologi kejadian pertandingan.</p>`;
+    timelineContainer.innerHTML = `<p class="text-xs text-gray-400 py-2">Tidak ada log kronologi kejadian pertandingan.</p>`;
   }
 }
 
-// LOGIKA RENDER STATISTIK BARU (MENYESUAIKAN RESPONSE API ASLI)
 function renderStatistics(statsData) {
   const container = document.getElementById("stats-container");
-  
-  // Ambil object data tim berdasarkan ID Match key di API
   const matchIdKey = matchId.toString();
   const targetMatchStats = statsData[matchIdKey] || statsData;
 
   if (!targetMatchStats || !targetMatchStats.statistics || targetMatchStats.statistics.length === 0) {
     container.innerHTML = `
-      <div class="bg-[#141414] text-center p-8 text-sm text-gray-500 rounded-xl border border-gray-900">
+      <div class="bg-gray-50 text-center p-8 text-sm text-gray-500 rounded-xl border border-gray-200">
         Statistik pertandingan belum tersedia untuk laga ini.
       </div>
     `;
@@ -281,11 +280,8 @@ function renderStatistics(statsData) {
   }
 
   const rawStats = targetMatchStats.statistics;
-
-  // Helper function buat nyari data statistik
   const getStat = (type) => rawStats.find(s => s.type.toLowerCase() === type.toLowerCase());
 
-  // Bikin data buatan (sintetis) untuk "Total Tembakan" karena API tidak menyediakannya
   const onTarget = getStat("On Target");
   const offTarget = getStat("Off Target");
   if (onTarget && offTarget && !getStat("Total Shots")) {
@@ -296,15 +292,13 @@ function renderStatistics(statsData) {
     });
   }
 
-  // Definisikan kategori grup berdasarkan key aslinya dari API
   const groups = {
-    "Statistik utama": ["Ball Possession", "Total Shots", "On Target", "Corners"],
+    "Statistik Utama": ["Ball Possession", "Total Shots", "On Target", "Corners"],
     "Tembakan": ["Total Shots", "On Target", "Off Target"],
     "Serangan": ["Corners", "Free Kick", "Attacks", "Dangerous Attacks"],
     "Lainnya": ["Throw In", "Goal Kick", "Substitution", "Penalty"]
   };
 
-  // Terjemahan label ke Bahasa Indonesia biar sesuai UI
   const translateLabel = {
     "Ball Possession": "Penguasaan bola",
     "Total Shots": "Total tembakan",
@@ -322,55 +316,43 @@ function renderStatistics(statsData) {
 
   let finalHtml = "";
 
-  // Loop setiap kelompok judul besar
   for (const groupTitle in groups) {
     const desiredTypes = groups[groupTitle];
     let itemsHtml = "";
 
     desiredTypes.forEach(type => {
-      // Cari data berdasarkan mapping group
       const statObj = getStat(type);
       if (!statObj) return;
 
       const homeValStr = statObj.home || "0";
       const awayValStr = statObj.away || "0";
 
-      // Bersihkan karakter persen (%) jika ada untuk perhitungan rumus lebar bar
       const homeVal = parseFloat(homeValStr.replace("%", "")) || 0;
       const awayVal = parseFloat(awayValStr.replace("%", "")) || 0;
       const total = homeVal + awayVal;
 
-      // Hitung persentase lebar bar (Maksimal total 100%)
       let homeBarWidth = 0;
       let awayBarWidth = 0;
       if (total > 0) {
         homeBarWidth = (homeVal / total) * 100;
         awayBarWidth = (awayVal / total) * 100;
-      } else {
-        // Jika keduanya nol, biarkan kosong
-        homeBarWidth = 0;
-        awayBarWidth = 0;
       }
 
       const displayType = translateLabel[statObj.type] || statObj.type;
 
-      // Render Bar Kiri (Merah) dan Bar Kanan (Putih)
       itemsHtml += `
         <div class="space-y-1.5">
-          <div class="flex justify-between text-[13px] font-semibold text-gray-200 px-0.5">
+          <div class="flex justify-between text-[13px] font-bold text-gray-800 px-0.5">
             <span>${homeValStr}</span>
-            <span class="text-xs text-gray-400 font-medium">${displayType}</span>
+            <span class="text-xs text-gray-500 font-semibold">${displayType}</span>
             <span>${awayValStr}</span>
           </div>
-          <!-- Bar Track Wrapper -->
-          <div class="flex w-full h-[5px] bg-gray-900 rounded-full overflow-hidden">
-            <!-- Home Bar (Merah - Rata Kanan) -->
-            <div class="w-1/2 flex justify-end bg-gray-900 pr-[1px]">
-              <div class="h-full bg-red-600 rounded-l-full transition-all duration-500" style="width: ${homeBarWidth}%"></div>
+          <div class="flex w-full h-[6px] bg-gray-200 rounded-full overflow-hidden">
+            <div class="w-1/2 flex justify-end bg-gray-200 pr-[1px]">
+              <div class="h-full bg-[#1C1D5F] rounded-l-full transition-all duration-500" style="width: ${homeBarWidth}%"></div>
             </div>
-            <!-- Away Bar (Putih - Rata Kiri) -->
-            <div class="w-1/2 flex justify-start bg-gray-900 pl-[1px]">
-              <div class="h-full bg-white rounded-r-full transition-all duration-500" style="width: ${awayBarWidth}%"></div>
+            <div class="w-1/2 flex justify-start bg-gray-200 pl-[1px]">
+              <div class="h-full bg-red-500 rounded-r-full transition-all duration-500" style="width: ${awayBarWidth}%"></div>
             </div>
           </div>
         </div>
@@ -380,8 +362,8 @@ function renderStatistics(statsData) {
     if (itemsHtml !== "") {
       finalHtml += `
         <div class="space-y-3.5">
-          <h3 class="text-sm font-bold text-gray-200 tracking-wide text-[14px] px-0.5">${groupTitle}</h3>
-          <div class="bg-[#121315]/40 border border-gray-900/80 rounded-xl p-4.5 space-y-4">
+          <h3 class="text-[11px] font-bold text-[#1C1D5F] tracking-wider uppercase px-0.5">${groupTitle}</h3>
+          <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4.5 space-y-4">
             ${itemsHtml}
           </div>
         </div>
@@ -389,9 +371,8 @@ function renderStatistics(statsData) {
     }
   }
 
-  container.innerHTML = finalHtml || `<div class="text-center p-6 text-gray-500">Statistik belum siap dimuat.</div>`;
+  container.innerHTML = finalHtml || `<div class="text-center p-6 text-gray-400">Statistik belum siap dimuat.</div>`;
 }
-
 
 function renderLineups(lineupsData, matchEvent) {
   const matchIdKey = matchId.toString();
@@ -407,9 +388,9 @@ function renderLineups(lineupsData, matchEvent) {
     const homeStarterContainer = document.getElementById("home-starting-players");
     if (Array.isArray(targetLineup.home.starting_lineups)) {
       homeStarterContainer.innerHTML = targetLineup.home.starting_lineups.map(p => `
-        <div class="flex items-center gap-2.5 py-1.5 border-b border-gray-900/20">
-          <span class="w-5 shrink-0 text-center text-[11px] font-extrabold text-red-400 bg-red-950/50 border border-red-900/30 py-0.5 rounded">${p.lineup_number || '-'}</span>
-          <span class="text-gray-300 font-medium text-[13px] truncate">${p.lineup_player}</span>
+        <div class="flex items-center gap-2.5 py-2 border-b border-gray-100 last:border-0">
+          <span class="w-6 shrink-0 text-center text-[10px] font-extrabold text-[#1C1D5F] bg-[#1C1D5F]/10 border border-[#1C1D5F]/20 py-0.5 rounded shadow-sm">${p.lineup_number || '-'}</span>
+          <span class="text-gray-800 font-semibold text-[13px] truncate">${p.lineup_player}</span>
         </div>
       `).join("");
     }
@@ -417,9 +398,9 @@ function renderLineups(lineupsData, matchEvent) {
     const awayStarterContainer = document.getElementById("away-starting-players");
     if (Array.isArray(targetLineup.away.starting_lineups)) {
       awayStarterContainer.innerHTML = targetLineup.away.starting_lineups.map(p => `
-        <div class="flex items-center gap-2.5 py-1.5 border-b border-gray-900/20 flex-row-reverse text-right">
-          <span class="w-5 shrink-0 text-center text-[11px] font-extrabold text-gray-300 bg-gray-800 border border-gray-700/50 py-0.5 rounded">${p.lineup_number || '-'}</span>
-          <span class="text-gray-300 font-medium text-[13px] truncate">${p.lineup_player}</span>
+        <div class="flex items-center gap-2.5 py-2 border-b border-gray-100 last:border-0 flex-row-reverse text-right">
+          <span class="w-6 shrink-0 text-center text-[10px] font-extrabold text-red-600 bg-red-50 border border-red-200 py-0.5 rounded shadow-sm">${p.lineup_number || '-'}</span>
+          <span class="text-gray-800 font-semibold text-[13px] truncate">${p.lineup_player}</span>
         </div>
       `).join("");
     }
@@ -427,29 +408,29 @@ function renderLineups(lineupsData, matchEvent) {
     const homeSubsContainer = document.getElementById("home-substitute-players");
     if (Array.isArray(targetLineup.home.substitutes) && targetLineup.home.substitutes.length > 0) {
       homeSubsContainer.innerHTML = targetLineup.home.substitutes.map(p => `
-        <div class="flex items-center gap-2.5 py-1.5 border-b border-gray-900/20">
-          <span class="w-5 shrink-0 text-center text-[11px] font-bold text-gray-400 bg-gray-900 px-1 rounded">${p.lineup_number || '-'}</span>
-          <span class="text-gray-500 text-[13px] truncate">${p.lineup_player}</span>
+        <div class="flex items-center gap-2.5 py-2 border-b border-gray-100 last:border-0">
+          <span class="w-5 shrink-0 text-center text-[10px] font-bold text-gray-500 bg-gray-100 px-1 rounded border border-gray-200">${p.lineup_number || '-'}</span>
+          <span class="text-gray-600 text-[13px] font-medium truncate">${p.lineup_player}</span>
         </div>
       `).join("");
     } else {
-      homeSubsContainer.innerHTML = `<p class="text-xs text-gray-600 py-1">Tidak ada pemain cadangan.</p>`;
+      homeSubsContainer.innerHTML = `<p class="text-xs text-gray-400 py-2">Tidak ada pemain cadangan.</p>`;
     }
 
     const awaySubsContainer = document.getElementById("away-substitute-players");
     if (Array.isArray(targetLineup.away.substitutes) && targetLineup.away.substitutes.length > 0) {
       awaySubsContainer.innerHTML = targetLineup.away.substitutes.map(p => `
-        <div class="flex items-center gap-2.5 py-1.5 border-b border-gray-900/20 flex-row-reverse text-right">
-          <span class="w-5 shrink-0 text-center text-[11px] font-bold text-gray-400 bg-gray-900 px-1 rounded">${p.lineup_number || '-'}</span>
-          <span class="text-gray-500 text-[13px] truncate">${p.lineup_player}</span>
+        <div class="flex items-center gap-2.5 py-2 border-b border-gray-100 last:border-0 flex-row-reverse text-right">
+          <span class="w-5 shrink-0 text-center text-[10px] font-bold text-gray-500 bg-gray-100 px-1 rounded border border-gray-200">${p.lineup_number || '-'}</span>
+          <span class="text-gray-600 text-[13px] font-medium truncate">${p.lineup_player}</span>
         </div>
       `).join("");
     } else {
-      awaySubsContainer.innerHTML = `<p class="text-xs text-gray-600 py-1 text-right">Tidak ada pemain cadangan.</p>`;
+      awaySubsContainer.innerHTML = `<p class="text-xs text-gray-400 py-2 text-right">Tidak ada pemain cadangan.</p>`;
     }
   } else {
     document.getElementById("tab-lineup").innerHTML = `
-      <div class="bg-[#141414] text-center p-8 text-sm text-gray-500 rounded-xl border border-gray-900">
+      <div class="bg-gray-50 text-center p-8 text-sm text-gray-500 rounded-xl border border-gray-200">
         Line-up susunan pemain belum tersedia untuk laga ini.
       </div>
     `;
@@ -462,14 +443,14 @@ function renderHeadToHead(h2hData, matchEvent) {
 
   if (h2hMatches.length === 0) {
     h2hContainer.innerHTML = `
-      <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider text-[11px] px-1 mt-2">Head to Heads</h3>
-      <div class="bg-[#141414] border border-gray-900 rounded-xl p-6 text-center flex flex-col justify-center items-center min-h-[120px]">
-        <h4 class="text-[14px] font-bold text-white tracking-wide">First Encounter Ahead!</h4>
+      <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider px-1 mt-4 mb-2">Head to Heads</h3>
+      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 text-center flex flex-col justify-center items-center min-h-[120px]">
+        <h4 class="text-[14px] font-bold text-gray-800 tracking-wide">First Encounter Ahead!</h4>
         <p class="text-[12px] text-gray-500 mt-1">These teams haven't faced each other yet.</p>
         <div class="flex justify-center gap-1.5 mt-4">
-          <span class="w-1.5 h-1.5 bg-red-600 rounded-full"></span>
-          <span class="w-1.5 h-1.5 bg-gray-700 rounded-full"></span>
-          <span class="w-1.5 h-1.5 bg-gray-700 rounded-full"></span>
+          <span class="w-1.5 h-1.5 bg-[#1C1D5F] rounded-full"></span>
+          <span class="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
+          <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
         </div>
       </div>
     `;
@@ -496,20 +477,20 @@ function renderHeadToHead(h2hData, matchEvent) {
   });
 
   let h2hHtml = `
-    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider text-[11px] px-1 mt-2">Head to Heads</h3>
-    <div class="bg-[#141414] border border-gray-900 rounded-xl p-4 space-y-4">
-      <div class="grid grid-cols-3 text-center border-b border-gray-900/60 pb-3.5">
+    <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider px-1 mt-4 mb-2">Head to Heads</h3>
+    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4 space-y-4">
+      <div class="grid grid-cols-3 text-center border-b border-gray-100 pb-3.5">
         <div>
-          <div class="text-[13px] font-bold text-white">${homeWins} Wins</div>
-          <div class="w-10 h-[3px] bg-red-600 rounded-full mx-auto mt-1.5"></div>
+          <div class="text-[13px] font-bold text-gray-800">${homeWins} Wins</div>
+          <div class="w-10 h-[4px] bg-[#1C1D5F] rounded-full mx-auto mt-1.5"></div>
         </div>
         <div>
-          <div class="text-[13px] font-bold text-white">${draws} Draws</div>
-          <div class="w-10 h-[3px] bg-gray-500 rounded-full mx-auto mt-1.5"></div>
+          <div class="text-[13px] font-bold text-gray-800">${draws} Draws</div>
+          <div class="w-10 h-[4px] bg-gray-300 rounded-full mx-auto mt-1.5"></div>
         </div>
         <div>
-          <div class="text-[13px] font-bold text-white">${awayWins} Wins</div>
-          <div class="w-10 h-[3px] bg-white rounded-full mx-auto mt-1.5"></div>
+          <div class="text-[13px] font-bold text-gray-800">${awayWins} Wins</div>
+          <div class="w-10 h-[4px] bg-red-500 rounded-full mx-auto mt-1.5"></div>
         </div>
       </div>
       <div class="space-y-4" id="h2h-grouped-list"></div>
@@ -538,21 +519,21 @@ function renderHeadToHead(h2hData, matchEvent) {
     for (const year in yearGroups) {
       const currentYearMatches = yearGroups[year];
       leagueMatchesBody += `
-        <div class="flex items-start gap-3 py-2 border-b border-gray-900/30 last:border-0">
-          <div class="text-[11px] font-bold text-gray-500 shrink-0 min-w-[36px] pt-1">${year}</div>
+        <div class="flex items-start gap-3 py-2 border-b border-gray-200 last:border-0">
+          <div class="text-[11px] font-bold text-gray-400 shrink-0 min-w-[36px] pt-1">${year}</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
             ${currentYearMatches.map(m => {
               const dateRaw = new Date(m.match_date);
               const formattedDate = !isNaN(dateRaw) ? dateRaw.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : m.match_date;
               return `
-                <div class="flex items-center justify-between bg-black/40 border border-gray-900/60 rounded-lg px-2.5 py-1.5 text-[12px]">
+                <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-[12px] hover:bg-gray-100 transition-colors">
                   <span class="text-gray-500 font-medium">${formattedDate}</span>
                   <div class="flex items-center gap-2 mx-auto">
-                    <span class="font-bold text-gray-300 max-w-[75px] truncate">${m.match_hometeam_name}</span>
-                    <span class="bg-black text-[11px] font-extrabold text-white px-2 py-0.5 rounded border border-gray-800 tracking-wide">
+                    <span class="font-bold text-gray-800 max-w-[75px] truncate">${m.match_hometeam_name}</span>
+                    <span class="bg-white text-[11px] font-black text-[#1C1D5F] px-2 py-0.5 rounded border border-gray-200 tracking-wide shadow-sm">
                       ${m.match_hometeam_score} - ${m.match_awayteam_score}
                     </span>
-                    <span class="font-bold text-gray-300 max-w-[75px] truncate">${m.match_awayteam_name}</span>
+                    <span class="font-bold text-gray-800 max-w-[75px] truncate">${m.match_awayteam_name}</span>
                   </div>
                 </div>
               `;
@@ -563,12 +544,12 @@ function renderHeadToHead(h2hData, matchEvent) {
     }
 
     const sectionBlock = document.createElement("div");
-    sectionBlock.className = "space-y-1.5";
+    sectionBlock.className = "space-y-1.5 mt-2";
     sectionBlock.innerHTML = `
-      <div class="text-[11px] font-bold text-gray-400 flex items-center gap-1 px-1">
+      <div class="text-[11px] font-bold text-gray-500 flex items-center gap-1 px-1 uppercase tracking-wide">
         <span class="text-[12px]">⚽</span> ${leagueName}
       </div>
-      <div class="bg-black/20 border border-gray-900/60 rounded-xl p-3">
+      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-3">
         ${leagueMatchesBody}
       </div>
     `;
@@ -581,13 +562,13 @@ function switchTab(tabName) {
   document.getElementById(`tab-${tabName}`).classList.remove("hidden");
 
   document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.classList.remove("bg-yellow-400", "text-black");
-    btn.classList.add("bg-[#1c1d20]", "text-gray-400");
+    btn.classList.remove("bg-[#1C1D5F]", "text-white");
+    btn.classList.add("bg-gray-100", "text-gray-500");
   });
 
   const activeBtn = document.getElementById(`btn-${tabName}`);
-  activeBtn.classList.remove("bg-[#1c1d20]", "text-gray-400");
-  activeBtn.classList.add("bg-yellow-400", "text-black");
+  activeBtn.classList.remove("bg-gray-100", "text-gray-500");
+  activeBtn.classList.add("bg-[#1C1D5F]", "text-white");
 }
 
 loadMatchDetails();

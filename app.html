@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    html { scroll-behavior: smooth; }
+    /* Hide scrollbar for slider */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Padding bottom agar konten tidak tertutup bottom navbar */
+    .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); }
+  </style>
+</head>
+
+<body class="bg-white text-black min-h-screen relative pb-24">
+
+  <div id="view-matches" class="block">
+    <header class="sticky top-0 z-40 backdrop-blur-md pb-2 bg-white/90">
+      <div class="max-w-3xl mx-auto flex items-center justify-center">
+        <div class="bg-[url('/benner.png')] bg-cover bg-center w-full aspect-[430/120] flex items-center justify-center mb-4">
+          <p class="text-4xl font-black text-white drop-shadow-md">Pertandingan</p>
+        </div>
+      </div>
+      <div class="relative max-w-2xl mx-auto flex items-center">
+        <div id="date-slider" class="flex items-center gap-2 overflow-x-auto no-scrollbar px-2 w-full pb-1 scroll-smooth"></div>
+      </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto p-4 mt-2">
+      <div id="matches-loading" class="text-center py-12">
+        <div class="w-8 h-8 border-4 border-gray-300 border-t-[#1C1D5F] rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-sm text-gray-500">Memuat jadwal pertandingan...</p>
+      </div>
+      <div id="matches-container" class="space-y-5 hidden"></div>
+      <div id="matches-empty" class="hidden text-center py-16 text-gray-400">
+        <div class="text-4xl mb-3 opacity-50">⚽</div>
+        <p>Tidak ada pertandingan di tanggal ini.</p>
+      </div>
+    </main>
+  </div>
+
+
+  <div id="view-live" class="hidden">
+    <header class="sticky top-0 z-40 backdrop-blur-md pb-4">
+      <div class="max-w-3xl mx-auto flex items-center justify-center">
+        <div class="bg-[url('/benner.png')] bg-cover bg-center w-full aspect-[430/120] flex items-center justify-center mb-4">
+          <p class="text-4xl font-black text-white drop-shadow-md">Berlangsung</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto p-4 mt-2">
+      <div id="live-loading" class="text-center py-12">
+        <div class="w-8 h-8 border-4 border-gray-300 border-t-red-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-sm text-gray-500">Memeriksa pertandingan live...</p>
+      </div>
+      <div id="live-container" class="space-y-5 hidden"></div>
+      <div id="live-empty" class="hidden text-center py-16 text-gray-400">
+        <div class="text-4xl mb-3 opacity-50">📡</div>
+        <p class="text-sm font-semibold">Saat ini tidak ada pertandingan live.</p>
+      </div>
+    </main>
+  </div>
+
+
+  <nav class="fixed bottom-0 left-0 w-full z-50 bg-white backdrop-blur-md shadow-[0_-0px_10px_rgba(0,0,0,0.1)] pb-safe pb-2">
+    <div class="max-w-2xl mx-auto flex justify-around">
+      <button onclick="switchView('matches')" id="nav-btn-matches" class="flex-1 py-3 flex flex-col items-center gap-1 text-[#1C1D5F] transition-colors cursor-pointer">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M24.5 11.842V20.9613C24.5 23.56 22.4107 25.6666 19.8333 25.6666H8.16667C5.58934 25.6666 3.5 23.56 3.5 20.9613V11.842C3.5 10.4292 4.12959 9.09123 5.21484 8.19759L11.0482 3.39422C12.766 1.97968 15.234 1.97968 16.9518 3.39422L22.7852 8.19759C23.8704 9.09123 24.5 10.4292 24.5 11.842ZM11.6667 20.125C11.1834 20.125 10.7917 20.5167 10.7917 21C10.7917 21.4832 11.1834 21.875 11.6667 21.875H16.3333C16.8166 21.875 17.2083 21.4832 17.2083 21C17.2083 20.5167 16.8166 20.125 16.3333 20.125H11.6667Z" fill="currentColor" />
+        </svg>
+        <span class="text-[11px] font-bold">Matches</span>
+      </button>
+      
+      <button onclick="switchView('live')" id="nav-btn-live" class="flex-1 py-3 flex flex-col items-center gap-1 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer relative">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+        <span class="text-[11px] font-bold">Live</span>
+      </button>
+    </div>
+  </nav>
+
+<script>
+// --- CONFIG & STATE GLOBAL ---
+const apiKey = "20cbd64e90926ce0eefd4b1e9127059d35058c253fb15a1a6b9b66efe131b5c0";
+const targetLeagueIds = [153, 168, 55, 653, 356];
+const targetCountryIds = [44, 3, 18, 114, 133];
+
+let currentView = 'matches'; 
+let selectedDate = new Date();
+let activeRefreshInterval = null;
+let cachedLeagues = null;
+
+// --- UTILITIES ---
+const formatForApi = (date) => date.toISOString().split("T")[0]; 
+const getShortDay = (date) => date.toLocaleDateString('en-US', { weekday: 'short' }); 
+const getShortMonth = (date) => date.toLocaleDateString('en-US', { month: 'short' }); 
+const isSameDate = (d1, d2) => d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+
+function clearRefresh() {
+  if (activeRefreshInterval) {
+    clearInterval(activeRefreshInterval);
+    activeRefreshInterval = null;
+  }
+}
+
+// --- NAVIGASI ANTAR TAB ---
+function switchView(viewName) {
+  currentView = viewName;
+  clearRefresh();
+  
+  const btnMatches = document.getElementById("nav-btn-matches");
+  const btnLive = document.getElementById("nav-btn-live");
+  
+  if (viewName === 'matches') {
+    btnMatches.classList.replace("text-gray-400", "text-[#1C1D5F]");
+    btnLive.classList.replace("text-red-500", "text-gray-400");
+    btnLive.classList.replace("text-[#1C1D5F]", "text-gray-400");
+    
+    document.getElementById("view-matches").classList.replace("hidden", "block");
+    document.getElementById("view-live").classList.replace("block", "hidden");
+    
+    renderDateSlider();
+    loadMatchesData(formatForApi(selectedDate), false);
+    
+    // Auto Refresh 1 Menit (Silent)
+    if (isSameDate(selectedDate, new Date())) {
+      activeRefreshInterval = setInterval(() => loadMatchesData(formatForApi(selectedDate), true), 60000);
+    }
+  } 
+  else if (viewName === 'live') {
+    btnLive.classList.replace("text-gray-400", "text-red-500");
+    btnMatches.classList.replace("text-yellow-400", "text-gray-400");
+    btnMatches.classList.replace("text-[#1C1D5F]", "text-gray-400");
+    
+    document.getElementById("view-live").classList.replace("hidden", "block");
+    document.getElementById("view-matches").classList.replace("block", "hidden");
+    
+    loadLiveData(false);
+    
+    // Auto Refresh 1 Menit (Silent)
+    activeRefreshInterval = setInterval(() => loadLiveData(true), 60000);
+  }
+}
+
+async function getSelectedLeagues() {
+  if (cachedLeagues) return cachedLeagues;
+
+  let allLeagues = [];
+  for (const countryId of targetCountryIds) {
+    try {
+      const response = await fetch(`https://apiv3.apifootball.com/?action=get_leagues&country_id=${countryId}&APIkey=${apiKey}`);
+      const leagues = await response.json();
+      if (Array.isArray(leagues)) allLeagues.push(...leagues);
+    } catch (e) { console.error("Error fetching leagues:", e); }
+  }
+  
+  cachedLeagues = allLeagues
+    .filter(league => targetLeagueIds.includes(parseInt(league.league_id)))
+    .map(league => ({
+      id: parseInt(league.league_id), 
+      name: league.league_name, 
+      logo: league.league_logo, 
+      country: league.country_name
+    }));
+    
+  return cachedLeagues;
+}
+
+// --- LOGIKA HELPER TAMPILAN KARTU ---
+function getMatchStatusDisplay(match) {
+  const statusRaw = (match.match_status || "").trim();
+  const statusLower = statusRaw.toLowerCase();
+  const homeScore = match.match_hometeam_score ?? "";
+  const awayScore = match.match_awayteam_score ?? "";
+  
+  const isFinished = ["finished", "ft", "aet", "ap", "pen.", "after pen."].includes(statusLower) || statusLower.includes("finish") || statusLower === "ft";
+  const isLive = match.match_live === "1" || ["1h", "2h", "ht", "et", "p", "pen", "break"].includes(statusLower);
+  
+  if (isFinished || isLive) {
+    return `
+      <div class="flex flex-col items-center justify-center">
+        <div class="text-[18px] font-black ${isLive ? 'text-red-500' : 'text-black'}">
+          ${homeScore} - ${awayScore}
+        </div>
+        <div class="text-[10px] uppercase font-bold text-red-500 mt-0.5">
+          ${isLive ? (statusRaw + "'") : "FULL-TIME"}
+        </div>
+      </div>`;
+  } else {
+    return `
+      <div class="text-[18px] font-black text-black">
+        ${match.match_time ? match.match_time.substring(0, 5) : '00:00'}
+      </div>`;
+  }
+}
+
+function buildMatchCard(match) {
+  const centerDisplay = getMatchStatusDisplay(match);
+  return `
+    <div onclick="window.location.href='match-detail.html?id=${match.match_id}&league_id=${match.league_id}'" 
+         class="flex items-center justify-between p-4 border-b-2 border-gray-100 last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer">
+      
+      <div class="flex items-center gap-3 w-[40%]">
+        <img src="${match.team_home_badge || 'https://placehold.co/24'}" class="w-7 h-7 object-contain" onerror="this.src='🛡️'">
+        <span class="text-[14px] font-bold truncate">${match.match_hometeam_name}</span>
+      </div>
+
+      <div class="w-[20%] flex justify-center">
+        ${centerDisplay}
+      </div>
+
+      <div class="flex items-center gap-3 w-[40%] justify-end text-right">
+        <span class="text-[14px] font-bold truncate">${match.match_awayteam_name}</span>
+        <img src="${match.team_away_badge || 'https://placehold.co/24'}" class="w-7 h-7 object-contain" onerror="this.src='⚽'">
+      </div>
+    </div>
+  `;
+}
+
+
+// --- LOGIKA TAB: MATCHES ---
+function renderDateSlider() {
+  const slider = document.getElementById("date-slider");
+  slider.innerHTML = "";
+  const today = new Date();
+  
+  for (let i = -15; i <= 15; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    
+    const isToday = isSameDate(d, today);
+    const isSelected = isSameDate(d, selectedDate);
+    const dayName = isToday ? "Today" : getShortDay(d);
+    const dateText = `${d.getDate()} ${getShortMonth(d)}`;
+
+    let bgClass = isSelected ? "bg-[#1C1D5F]" : "bg-transparent hover:bg-gray-100";
+    let textDayClass = isSelected ? "text-white" : "text-gray-500";
+    let textDateClass = isSelected ? "text-gray-300" : "text-gray-400";
+    
+    const btnHtml = `
+      <button onclick="selectDate('${formatForApi(d)}')" class="flex flex-col items-center justify-center min-w-[70px] px-2 py-1.5 rounded-xl cursor-pointer transition-colors ${bgClass}">
+        <span class="text-[13px] font-bold ${textDayClass}">${dayName}</span>
+        <span class="text-[11px] font-medium ${textDateClass} mt-0.5">${dateText}</span>
+      </button>
+    `;
+    slider.insertAdjacentHTML('beforeend', btnHtml);
+  }
+
+  setTimeout(() => {
+    const selectedEl = slider.querySelector('.bg-\\[\\#1C1D5F\\]');
+    if(selectedEl) selectedEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, 100);
+}
+
+function selectDate(dateString) {
+  selectedDate = new Date(dateString);
+  renderDateSlider(); 
+  
+  clearRefresh();
+  loadMatchesData(formatForApi(selectedDate), false);
+  
+  if (isSameDate(selectedDate, new Date())) {
+    activeRefreshInterval = setInterval(() => loadMatchesData(formatForApi(selectedDate), true), 60000);
+  }
+}
+
+async function getMatchesForDashboard(leagueId, targetDate) {
+  try {
+    const target = new Date(targetDate);
+    const dPrev = new Date(target); dPrev.setDate(dPrev.getDate() - 1);
+    const dNext = new Date(target); dNext.setDate(dNext.getDate() + 1);
+    
+    const prevDate = dPrev.toISOString().split("T")[0];
+    const nextDate = dNext.toISOString().split("T")[0];
+
+    const response = await fetch(`https://apiv3.apifootball.com/?action=get_events&from=${prevDate}&to=${nextDate}&league_id=${leagueId}&timezone=Asia/Jakarta&APIkey=${apiKey}`);
+    const data = await response.json();
+    
+    if (!data || !Array.isArray(data) || data.error) return [];
+    
+    return data.filter(match => match.match_date === targetDate);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function loadMatchesData(targetDate, isSilent = false) {
+  const container = document.getElementById("matches-container");
+  const loading = document.getElementById("matches-loading");
+  const empty = document.getElementById("matches-empty");
+  
+  if (!isSilent) {
+    container.classList.add("hidden");
+    empty.classList.add("hidden");
+    loading.classList.remove("hidden");
+  }
+
+  const leagues = await getSelectedLeagues();
+  const matchPromises = leagues.map(async (league) => {
+    const matches = await getMatchesForDashboard(league.id, targetDate); 
+    return { league, matches };
+  });
+
+  const results = await Promise.all(matchPromises);
+  
+  results.forEach(leagueGroup => {
+    if (leagueGroup.matches && leagueGroup.matches.length > 0) {
+      leagueGroup.matches.sort((a, b) => {
+        const timeA = a.match_time || "23:59";
+        const timeB = b.match_time || "23:59";
+        return timeA.localeCompare(timeB);
+      });
+    }
+  });
+
+  container.innerHTML = "";
+  let totalFound = 0;
+
+  results.forEach(({ league, matches }) => {
+    if (matches.length === 0) return;
+    totalFound += matches.length;
+
+    let html = `
+      <div class="mb-4 bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="flex items-center gap-3 py-5 px-3 bg-white">
+          <img src="${league.logo || 'https://placehold.co/40'}" class="w-8 h-8 object-contain" alt="" />
+          <div>
+            <h2 class="text-[14px] font-bold leading-tight">${league.name}</h2>
+            <p class="text-[11px] text-gray-500 font-normal mt-0.5">${league.country || 'International'}</p>
+          </div>
+        </div>
+        <div class="px-2">
+          ${matches.map(m => buildMatchCard(m)).join("")}
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+
+  if (!isSilent) loading.classList.add("hidden");
+  
+  if (totalFound > 0) {
+    container.classList.remove("hidden");
+    if (!isSilent) empty.classList.add("hidden");
+  } else {
+    if (!isSilent) {
+      container.classList.add("hidden");
+      empty.classList.remove("hidden");
+    }
+  }
+}
+
+// --- LOGIKA TAB: LIVE MATCHES ---
+async function loadLiveData(isSilent = false) {
+  const container = document.getElementById("live-container");
+  const loading = document.getElementById("live-loading");
+  const empty = document.getElementById("live-empty");
+  
+  if (!isSilent) {
+    container.classList.add("hidden");
+    empty.classList.add("hidden");
+    loading.classList.remove("hidden");
+  }
+  
+  const leagues = await getSelectedLeagues();
+  const livePromises = leagues.map(async (league) => {
+    try {
+      const res = await fetch(`https://apiv3.apifootball.com/?action=get_events&league_id=${league.id}&match_live=1&timezone=Asia/Jakarta&APIkey=${apiKey}`);
+      const data = await res.json();
+      
+      let validLive = [];
+      if (Array.isArray(data) && !data.error) {
+        validLive = data.filter(match => {
+          const s = (match.match_status || "").trim().toLowerCase();
+          const isFinished = ["finished", "ft", "aet", "ap", "pen.", "after pen."].includes(s) || s.includes("finish");
+          const isCancelled = ["cancelled", "postponed", "canc", "postp"].includes(s);
+          return !isFinished && !isCancelled;
+        });
+      }
+      return { league, matches: validLive };
+    } catch (e) {
+      return { league, matches: [] };
+    }
+  });
+
+  const results = await Promise.all(livePromises);
+
+  results.forEach(leagueGroup => {
+    if (leagueGroup.matches && leagueGroup.matches.length > 0) {
+      leagueGroup.matches.sort((a, b) => {
+        const timeA = a.match_time || "23:59";
+        const timeB = b.match_time || "23:59";
+        return timeA.localeCompare(timeB);
+      });
+    }
+  });
+  
+  container.innerHTML = "";
+  let totalLive = 0;
+
+  results.forEach(({ league, matches }) => {
+    if (matches.length === 0) return;
+    totalLive += matches.length;
+
+    let html = `
+      <div class="mb-4 bg-white rounded-xl border-2 border-gray-100 shadow-sm overflow-hidden">
+        <div class="flex items-center gap-3 py-3 px-3 border-b-2 border-gray-100 bg-gray-50/50">
+          <img src="${league.logo || 'https://placehold.co/40'}" class="w-8 h-8 object-contain" alt="" />
+          <div>
+            <h2 class="text-[14px] font-bold leading-tight">${league.name}</h2>
+            <p class="text-[11px] text-gray-500 font-normal mt-0.5">${league.country || 'International'}</p>
+          </div>
+        </div>
+        <div class="px-2">
+          ${matches.map(m => buildMatchCard(m)).join("")}
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', html);
+  });
+
+  if (!isSilent) loading.classList.add("hidden");
+  
+  if (totalLive > 0) {
+    container.classList.remove("hidden");
+    if (!isSilent) empty.classList.add("hidden");
+  } else {
+    if (!isSilent) {
+      container.classList.add("hidden");
+      empty.classList.remove("hidden");
+    }
+  }
+}
+
+// Inisialisasi awal UI
+switchView('matches');
+
+</script>
+</body>
+</html>
