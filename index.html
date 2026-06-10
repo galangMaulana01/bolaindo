@@ -3,937 +3,1210 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BolaIndo</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>indoscore - Sportmonks Testing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          merah: "#FC0B12",
+          kuning: "#F7CC0C",
+          latar: "#121212",
+          kartu: "#191919",
+        }
+      }
+    }
+  }
+</script>
 
+<!-- Style tambahan untuk modal auth -->
+<style>
+  .auth-modal-overlay {
+    z-index: 10001; /* di atas splash screen */
+  }
+  .auth-modal-content {
+    animation: slideUp 0.3s ease-out;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+</style>
   <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #e5e5e5; }
     html { scroll-behavior: smooth; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .pt-safe { padding-top: env(safe-area-inset-top); }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    
+    @keyframes progressLoading {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+    .animate-progress {
+      animation: progressLoading 2s ease-in-out infinite;
+    }
+
+    /* skeleton loading effect */
+    .skeleton {
+      background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 0.5rem;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton-text {
+      height: 1rem;
+      width: 100%;
+      border-radius: 0.375rem;
+    }
+    .skeleton-circle {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 9999px;
+    }
+    .skeleton-match-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background-color: #191919;
+      border-radius: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    /* Video splash screen */
+.video-splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.video-splash video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
   </style>
 </head>
+<body class="relative min-h-screen bg-black text-gray-200 overflow-x-hidden">
+  <!-- GLOBAL LOADING (TIDAK DIUBAH) -->
+  <div id="global-loading" class="fixed inset-0 bg-black z-[9999] flex flex-col items-center justify-center transition-opacity duration-500">
+    <div class="flex flex-col items-center w-full max-w-[200px] px-2">
+      <img src="logo.png" class="w-44 mb-5 object-contain" alt="Logo">
+      <div class="w-full h-[6px] bg-[#333] rounded-full overflow-hidden border border-gray-700/50">
+        <div class="h-full bg-merah rounded-full animate-progress"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- VIDEO SPLASH SCREEN (6 detik) -->
+<div id="video-splash" class="video-splash">
+  <video id="splash-video" autoplay muted playsinline>
+    <source src="splash.mp4" type="video/mp4">
+    <!-- Fallback jika video tidak bisa dimuat, bisa langsung hilang -->
+  </video>
+</div>
 
-<body class="bg-gray-50 text-gray-800 min-h-screen pb-24">
-
-<!-- ======================================================= -->
-<!-- VIEW: MATCHES                                            -->
-<!-- ======================================================= -->
+  <div class="fixed inset-0 -z-10">
+    <div class="absolute -top-40 -left-32 w-[500px] h-[400px] bg-merah/30 blur-[120px] rounded-full"></div>
+    <div class="absolute -top-32 -right-24 w-[400px] h-[300px] bg-kuning/30 blur-[120px] rounded-full"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black"></div>
+  </div>
+  
 <div id="view-matches" class="block">
-
-  <header class="sticky top-0 z-40 backdrop-blur-md pb-2 bg-white/90">
-    <div class="max-w-3xl mx-auto flex items-center justify-center">
-      <div class="bg-[url('https://raw.githubusercontent.com/galangMaulana01/bolaindo/main/benner.png')] bg-cover bg-center w-full aspect-[430/120] flex items-center justify-center mb-4">
-        <p class="text-4xl font-black text-white drop-shadow-md">Pertandingan</p>
-      </div>
-    </div>
-    <div class="relative max-w-2xl mx-auto flex items-center">
-      <div id="date-slider" class="flex items-center gap-2 overflow-x-auto no-scrollbar px-2 w-full pb-1 scroll-smooth"></div>
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-transparents pt-safe">
+    <div class="max-w-2xl mx-auto mt-2">
+      <img src="logo.png" class="w-48 pl-3">
     </div>
   </header>
-
-  <main class="max-w-2xl mx-auto p-4 mt-2">
-    <div id="matches-loading" class="text-center py-12">
-      <div class="w-8 h-8 border-4 border-gray-300 border-t-[#1C1D5F] rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-sm text-gray-500">Memuat jadwal pertandingan...</p>
-    </div>
+  <div id="benner" class="max-w-2xl mx-auto px-4 my-2"></div>
+  <main class="max-w-2xl mx-auto px-4">
+    <div id="matches-skeleton" class="space-y-5"></div>
     <div id="matches-container" class="space-y-5 hidden"></div>
-    <div id="matches-empty" class="hidden text-center py-16 text-gray-400">
-      <div class="text-4xl mb-3 opacity-50">⚽</div>
-      <p>Tidak ada pertandingan di tanggal ini.</p>
+    <div id="matches-empty" class="hidden text-center py-16 text-gray-500">
+      <div class="text-5xl mb-3 opacity-30">⚽</div>
+      <p class="font-medium">Tidak ada jadwal yang tersedia untuk liga ini.</p>
     </div>
   </main>
 </div>
 
-<!-- ======================================================= -->
-<!-- VIEW: LIVE                                               -->
-<!-- ======================================================= -->
-<div id="view-live" class="hidden">
-
-  <header class="sticky top-0 z-40 backdrop-blur-md pb-4">
-    <div class="max-w-3xl mx-auto flex items-center justify-center">
-      <div class="bg-[url('https://raw.githubusercontent.com/galangMaulana01/bolaindo/main/benner.png')] bg-cover bg-center w-full aspect-[430/120] flex items-center justify-center mb-4">
-        <p class="text-4xl font-black text-white drop-shadow-md">Berlangsung</p>
-      </div>
-    </div>
-  </header>
-
-  <main class="max-w-2xl mx-auto p-4 mt-2">
-    <div id="live-loading" class="text-center py-12">
-      <div class="w-8 h-8 border-4 border-gray-300 border-t-red-500 rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-sm text-gray-500">Memeriksa pertandingan live...</p>
-    </div>
-    <div id="live-container" class="space-y-5 hidden"></div>
-    <div id="live-empty" class="hidden text-center py-16 text-gray-400">
-      <div class="text-4xl mb-3 opacity-50">📡</div>
-      <p class="text-sm font-semibold">Saat ini tidak ada pertandingan live.</p>
-    </div>
-  </main>
-</div>
-
-<!-- ======================================================= -->
-<!-- VIEW: MATCH DETAIL (SPA — bukan halaman baru)           -->
-<!-- ======================================================= -->
 <div id="view-detail" class="hidden">
-
-  <!-- Header Detail — ikut style match-detail.html asli -->
-  <header class="bg-[url('https://raw.githubusercontent.com/galangMaulana01/bolaindo/main/benner.png')] bg-cover bg-center aspect-[430/120] pt-6 pb-6">
-    <div class="max-w-3xl mx-auto px-4">
-      <div class="flex items-center justify-between mb-4">
-        <button onclick="goBack()" class="p-2 hover:bg-white/10 rounded-full transition active:scale-95">
-          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+  <header class="bg-gradient-to-br from-merah/10 to-kuning/10 pt-safe pb-8 relative z-10">
+    <div class="max-w-2xl mx-auto px-4 pt-4">
+      <div class="flex items-center justify-between mb-6">
+        <button onclick="goBackFromDetail()" class="p-2 -ml-2 bg-black/30 hover:bg-black/50 rounded-full transition active:scale-95">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
         </button>
-        <span class="text-xs font-bold tracking-wider text-white/80 uppercase" id="league-name-header">Match Detail</span>
-        <div class="w-10"></div>
+        <span class="text-xs font-bold tracking-widest text-white/80 uppercase" id="league-name-header">Match Detail</span>
+        <div class="w-9"></div>
       </div>
 
-      <div id="scoreboard-loading" class="text-center py-6 text-sm text-white/60">Memuat data pertandingan...</div>
-
-      <div id="scoreboard-container" class="hidden">
-        <div class="flex items-center justify-between px-4 py-4">
-          <div class="flex flex-col items-center text-center w-[35%]">
-            <div class="bg-white p-3 rounded-full mb-2 shadow-sm">
-              <img id="home-logo" src="" class="w-14 h-14 object-contain" alt="">
-            </div>
-            <span id="home-name" class="text-[14px] font-bold text-white line-clamp-2 leading-tight"></span>
+      <div id="scoreboard-skeleton" class="py-8">
+        <div class="flex items-center justify-between px-2">
+          <div class="flex flex-col items-center text-center w-[35%] gap-2">
+            <div class="skeleton skeleton-circle w-12 h-12"></div>
+            <div class="skeleton skeleton-text w-24"></div>
           </div>
-          <div class="text-center w-[30%]">
-            <div id="match-score" class="text-4xl font-black tracking-widest text-white drop-shadow-md">0 - 0</div>
-            <div id="match-status" class="text-[10px] font-bold text-white bg-white/20 px-3 py-1 rounded-full border border-white/30 inline-block mt-2 tracking-wide uppercase">Full-Time</div>
+          <div class="text-center w-[30%] flex flex-col items-center gap-2">
+            <div class="skeleton skeleton-text w-16 h-8"></div>
+            <div class="skeleton skeleton-text w-20 h-6 rounded-full"></div>
           </div>
-          <div class="flex flex-col items-center text-center w-[35%]">
-            <div class="bg-white p-3 rounded-full mb-2 shadow-sm">
-              <img id="away-logo" src="" class="w-14 h-14 object-contain" alt="">
-            </div>
-            <span id="away-name" class="text-[14px] font-bold text-white line-clamp-2 leading-tight"></span>
+          <div class="flex flex-col items-center text-center w-[35%] gap-2">
+            <div class="skeleton skeleton-circle w-12 h-12"></div>
+            <div class="skeleton skeleton-text w-24"></div>
           </div>
         </div>
-
-        <div id="scorers-summary" class="hidden grid grid-cols-2 gap-4 mt-4 px-2 text-[12px] text-white/80 border-t border-white/10 pt-3">
-          <div id="home-scorers-list" class="space-y-1 text-left font-medium"></div>
-          <div id="away-scorers-list" class="space-y-1 text-right font-medium"></div>
+      </div>
+      <div id="scoreboard-container" class="hidden">
+        <div class="flex items-center justify-between px-2">
+          <div class="flex flex-col items-center text-center w-[35%]">
+              <img id="home-logo" src="https://placehold.co/60" class="w-12 h-12 object-contain" alt="">
+            <span id="home-name" class="text-[13px] font-bold text-white line-clamp-2 leading-snug">Tim Home</span>
+          </div>
+          <div class="text-center w-[30%] flex flex-col items-center">
+            <div id="match-score" class="text-4xl font-black tracking-wider text-white drop-shadow-md mb-2">VS</div>
+            <div id="match-status" class="text-[10px] font-bold text-merah bg-white px-3 py-1.5 rounded-full shadow-sm tracking-wide uppercase">STATUS</div>
+          </div>
+          <div class="flex flex-col items-center text-center w-[35%]">
+              <img id="away-logo" src="https://placehold.co/60" class="w-12 h-12 object-contain" alt="">
+            <span id="away-name" class="text-[13px] font-bold text-white line-clamp-2 leading-snug">Tim Away</span>
+          </div>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Tab Nav Detail -->
-  <nav class="sticky top-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm mt-[-20px] pt-5">
+  <nav class="sticky top-0 bg-kartu/95 backdrop-blur-md border-b border-gray-800 z-50 shadow-sm">
     <div class="max-w-2xl mx-auto px-4 py-3 flex gap-2 overflow-x-auto no-scrollbar">
-      <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-[#1C1D5F] text-white transition-all">Overview</button>
-      <button onclick="switchTab('events')"  id="btn-events"  class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all">Events</button>
-      <button onclick="switchTab('stats')"   id="btn-stats"   class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all">Stats</button>
-      <button onclick="switchTab('lineup')"  id="btn-lineup"  class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-500 hover:bg-gray-200 transition-all">Line-up</button>
+      <button onclick="switchDetailTab('overview')" id="btn-overview" class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-merah text-white transition-all">Overview</button>
+      <button onclick="switchDetailTab('events')"  id="btn-events"  class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all">Events</button>
+      <button onclick="switchDetailTab('stats')"   id="btn-stats"   class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all">Stats</button>
+      <button onclick="switchDetailTab('lineup')"  id="btn-lineup"  class="tab-btn shrink-0 px-5 py-2 rounded-full text-xs font-bold bg-gray-800 text-gray-300 hover:bg-gray-700 transition-all">Line-up</button>
     </div>
   </nav>
 
-  <!-- Tab Contents -->
   <main class="max-w-2xl mx-auto p-4 space-y-4">
-
-    <!-- Overview -->
-    <section id="tab-overview" class="tab-content space-y-4">
-      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
-        <h3 class="text-sm font-bold text-[#1C1D5F] mb-3 uppercase tracking-wider text-[11px]">Match Info</h3>
-        <div class="space-y-3 text-sm">
-          <div class="flex items-center gap-3 text-gray-600">
-            <span class="text-base shrink-0 bg-gray-50 p-1.5 rounded-lg border border-gray-100">🏆</span>
-            <div>
-              <p id="info-league" class="font-bold text-gray-900"></p>
-              <p id="info-stage"  class="text-xs text-gray-500"></p>
-            </div>
-          </div>
-          <div class="flex items-center gap-3 text-gray-600 border-t border-gray-100 pt-3">
-            <span class="text-base shrink-0 bg-gray-50 p-1.5 rounded-lg border border-gray-100">📅</span>
-            <div>
-              <p id="info-date" class="font-bold text-gray-900"></p>
-              <p id="info-time" class="text-xs text-gray-500"></p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="h2h-container" class="space-y-3">
-        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4 text-center text-xs text-gray-400">
-          Memuat data Head-to-Head...
-        </div>
-      </div>
-    </section>
-
-    <!-- Events -->
-    <section id="tab-events" class="tab-content hidden space-y-4">
-      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
-        <h3 class="text-sm font-bold text-[#1C1D5F] mb-4 uppercase tracking-wider text-[11px]">Match Timeline</h3>
-        <div class="relative border-l-2 border-gray-200 ml-4 pl-6 space-y-6" id="timeline-container"></div>
-      </div>
-    </section>
-
-    <!-- Stats -->
-    <section id="tab-stats" class="tab-content hidden space-y-5">
-      <div id="stats-container" class="space-y-6">
-        <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 text-center text-xs text-gray-400">
-          Memuat data statistik pertandingan...
-        </div>
-      </div>
-    </section>
-
-    <!-- Lineup -->
-    <section id="tab-lineup" class="tab-content hidden space-y-4">
-      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
-        <h4 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider mb-3">Pelatih Utama</h4>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div id="home-coach" class="border-r border-gray-200 pr-3 font-medium text-gray-800"></div>
-          <div id="away-coach" class="pl-3 font-medium text-gray-800 text-right"></div>
-        </div>
-      </div>
-      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
-        <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider mb-3">Starting Lineups</h3>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div id="home-starting-players" class="space-y-2 border-r border-gray-200 pr-3"></div>
-          <div id="away-starting-players" class="space-y-2 pl-3"></div>
-        </div>
-      </div>
-      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4">
-        <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider mb-3">Substitutes (Cadangan)</h3>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div id="home-substitute-players" class="space-y-2 border-r border-gray-200 pr-3"></div>
-          <div id="away-substitute-players" class="space-y-2 pl-3"></div>
-        </div>
-      </div>
-    </section>
-
+    <section id="tab-overview" class="tab-content space-y-4"></section>
+    <section id="tab-events" class="tab-content hidden space-y-4"></section>
+    <section id="tab-stats" class="tab-content hidden space-y-5"></section>
+    <section id="tab-lineup" class="tab-content hidden space-y-4"></section>
   </main>
 </div>
 
-<!-- ======================================================= -->
-<!-- BOTTOM NAV BAR                                           -->
-<!-- ======================================================= -->
-<nav id="bottom-nav" class="fixed bottom-0 left-0 w-full z-50 bg-white/95 backdrop-blur-md shadow-[0_-1px_10px_rgba(0,0,0,0.08)] pb-safe">
-  <div class="max-w-2xl mx-auto flex justify-around">
+<!-- KLASEMEN (STANDINGS) -->
+<div id="view-standings" class="hidden">
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-kartu/95 shadow-sm border-b border-gray-800 pt-safe">
+    <div class="max-w-2xl mx-auto px-4 py-4 text-center">
+      <h1 class="text-xl font-black text-white tracking-tight">KLASEMEN</h1>
+    </div>
+  </header>
+  <main class="max-w-2xl mx-auto p-4 mt-2">
+    <div id="standings-skeleton" class="space-y-4">
+      <div class="skeleton h-8 w-full mb-2"></div>
+      <div class="skeleton h-64 w-full"></div>
+    </div>
+    <div id="standings-container" class="hidden bg-kartu rounded shadow-sm border border-gray-800 overflow-hidden"></div>
+    <div id="standings-empty" class="hidden text-center py-16 text-gray-500">
+      <div class="text-5xl mb-3 opacity-30">📋</div>
+      <p class="font-medium">Klasemen belum tersedia.</p>
+    </div>
+  </main>
+</div>
 
-    <!-- Matches Tab -->
-    <button onclick="switchView('matches')" id="nav-btn-matches"
-      class="flex-1 py-3 flex flex-col items-center gap-1 text-[#1C1D5F] transition-colors cursor-pointer">
-      <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd" clip-rule="evenodd"
-          d="M24.5 11.842V20.9613C24.5 23.56 22.4107 25.6666 19.8333 25.6666H8.16667C5.58934 25.6666 3.5 23.56 3.5 20.9613V11.842C3.5 10.4292 4.12959 9.09123 5.21484 8.19759L11.0482 3.39422C12.766 1.97968 15.234 1.97968 16.9518 3.39422L22.7852 8.19759C23.8704 9.09123 24.5 10.4292 24.5 11.842ZM11.6667 20.125C11.1834 20.125 10.7917 20.5167 10.7917 21C10.7917 21.4832 11.1834 21.875 11.6667 21.875H16.3333C16.8166 21.875 17.2083 21.4832 17.2083 21C17.2083 20.5167 16.8166 20.125 16.3333 20.125H11.6667Z"
-          fill="currentColor"/>
-      </svg>
-      <span class="text-[11px] font-bold">Matches</span>
-    </button>
-
-    <!-- Live Tab -->
-    <button onclick="switchView('live')" id="nav-btn-live"
-      class="flex-1 py-3 flex flex-col items-center gap-1 text-gray-400 transition-colors cursor-pointer relative">
-      <!-- Live dot indicator -->
-      <div class="relative">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-        </svg>
-        <span id="live-indicator-dot" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+<!-- VIEW TIM (SQUAD) -->
+<div id="view-team" class="hidden">
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-merah pt-safe pb-4 rounded-b-2xl shadow-lg">
+    <div class="max-w-2xl mx-auto px-4">
+      <div class="flex items-center gap-3 p-3">
+        <button onclick="goBackFromTeam()" class="p-2 -ml-2 bg-black/20 rounded-full hover:bg-black/30 transition">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div class="flex items-center justify-center gap-3 flex-1" id="team-header">
+        </div>
+        <div class="w-9"></div>
       </div>
-      <span class="text-[11px] font-bold">Live</span>
-    </button>
+    </div>
+  </header>
+  
+  <main class="max-w-2xl mx-auto p-4">
+    <div id="squad-skeleton" class="space-y-4">
+      <div class="skeleton h-12 w-full"></div>
+      <div class="skeleton h-48 w-full"></div>
+    </div>
+    <div id="squad-container" class="hidden space-y-4"></div>
+    <div id="squad-empty" class="hidden text-center py-12 text-gray-500">
+      <div class="text-5xl mb-3 opacity-30">👕</div>
+      <p class="font-medium">Belum ada data pemain untuk tim ini.</p>
+    </div>
+  </main>
+</div>
 
+<nav id="bottom-nav" class="fixed bottom-0 left-0 w-full z-50 bg-kartu/95 backdrop-blur-md shadow-[0_-1px_10px_rgba(0,0,0,0.3)] pb-safe border-t border-gray-800">
+  <div class="max-w-2xl mx-auto flex justify-center gap-2">
+    <button onclick="switchMainView('matches')" id="nav-btn-matches" class="flex-1 py-3 flex flex-col items-center gap-1 text-merah transition-colors active:bg-gray-800">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M24.5 11.842V20.9613C24.5 23.56 22.4107 25.6666 19.8333 25.6666H8.16667C5.58934 25.6666 3.5 23.56 3.5 20.9613V11.842C3.5 10.4292 4.12959 9.09123 5.21484 8.19759L11.0482 3.39422C12.766 1.97968 15.234 1.97968 16.9518 3.39422L22.7852 8.19759C23.8704 9.09123 24.5 10.4292 24.5 11.842ZM11.6667 20.125C11.1834 20.125 10.7917 20.5167 10.7917 21C10.7917 21.4832 11.1834 21.875 11.6667 21.875H16.3333C16.8166 21.875 17.2083 21.4832 17.2083 21C17.2083 20.5167 16.8166 20.125 16.3333 20.125H11.6667Z" fill="currentColor" />
+      </svg>
+      <span class="text-[11px] font-bold">Jadwal</span>
+    </button>
+    <button onclick="switchMainView('standings')" id="nav-btn-standings" class="flex-1 py-3 flex flex-col items-center gap-1 text-gray-500 transition-colors active:bg-gray-800">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 20H20M6 17L6 13M12 17L12 9M18 17L18 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <rect x="4" y="3" width="4" height="4" rx="1" fill="currentColor" />
+        <rect x="10" y="3" width="4" height="4" rx="1" fill="currentColor" />
+        <rect x="16" y="3" width="4" height="4" rx="1" fill="currentColor" />
+      </svg>
+      <span class="text-[11px] font-bold">Klasemen</span>
+    </button>
   </div>
 </nav>
-
-<!-- ======================================================= -->
-<!-- SCRIPT                                                   -->
-<!-- ======================================================= -->
+<!-- MODAL LOGIN / DAFTAR -->
+<div id="auth-modal-overlay" class="auth-modal-overlay fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div class="auth-modal-content bg-[#1a1a1a] border border-gray-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+    <!-- Logo / Ikon -->
+    <div class="mb-4">
+      <img src="logo.png" class="w-14 mx-auto" alt="IndoScore">
+    </div>
+    <h2 class="text-lg font-black text-white mb-1">Selamat Datang di IndoScore</h2>
+    <p class="text-xs text-gray-400 mb-6">Masuk untuk pengalaman yang lebih personal</p>
+    
+    <!-- Tombol Google -->
+    <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-xl transition mb-3 active:scale-95">
+      <svg width="20" height="20" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+      </svg>
+      Masuk / Daftar dengan Google
+    </button>
+    
+    <!-- Tombol Nanti Saja -->
+    <button id="btn-skip-auth" class="w-full py-2.5 px-4 text-gray-400 hover:text-white text-sm font-medium transition">Nanti Saja</button>
+    
+    <!-- Pesan error -->
+    <div id="auth-error" class="hidden mt-4 text-xs text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-2">
+      <span id="auth-error-text"></span>
+    </div>
+  </div>
+</div>
 <script>
-// ==================== CONFIG ====================
-const apiKey          = "20cbd64e90926ce0eefd4b1e9127059d35058c253fb15a1a6b9b66efe131b5c0";
-const targetLeagueIds = [153, 168, 55, 653, 356];
-const targetCountryIds= [44, 3, 18, 114, 133];
+// ==================== KONFIGURASI ====================
+const API_BASE_URL = "https://sportmonks-tawny.vercel.app";
+const TARGET_LEAGUE_IDS = [501];
+let activeSeasonId = null;
+let previousViewName = 'matches';
+let currentActiveView = 'matches';
+let currentTeamIdForSquad = null;
 
-// ==================== STATE ====================
-let currentView        = 'matches';
-let previousView       = 'matches';
-let selectedDate       = new Date();
-let activeRefreshTimer = null;
-let cachedLeagues      = null;
-let currentMatchId     = null;
-
-// ==================== UTILITIES ====================
-const formatForApi = d => d.toISOString().split("T")[0];
-const getShortDay  = d => d.toLocaleDateString('en-US', { weekday: 'short' });
-const getShortMonth= d => d.toLocaleDateString('en-US', { month: 'short' });
-const isSameDate   = (d1, d2) =>
-  d1.getFullYear() === d2.getFullYear() &&
-  d1.getMonth()    === d2.getMonth()    &&
-  d1.getDate()     === d2.getDate();
-
-function clearRefresh() {
-  if (activeRefreshTimer) { clearInterval(activeRefreshTimer); activeRefreshTimer = null; }
+// ==================== UTILITIES & HELPERS ====================
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
 }
 
-// ==================== ROUTER ====================
-function showPage(viewId) {
-  ['view-matches', 'view-live', 'view-detail'].forEach(id => {
-    document.getElementById(id).classList.add('hidden');
-  });
+function showSkeleton(skeletonId, containerId, hideOthers = true) {
+  document.getElementById(skeletonId)?.classList.remove('hidden');
+  if (containerId) document.getElementById(containerId)?.classList.add('hidden');
+  if (hideOthers) {
+    const emptyEl = document.getElementById(skeletonId.replace('-skeleton', '-empty'));
+    if (emptyEl) emptyEl.classList.add('hidden');
+  }
+}
+
+function hideSkeletonAndShow(skeletonId, containerId) {
+  document.getElementById(skeletonId)?.classList.add('hidden');
+  if (containerId) document.getElementById(containerId)?.classList.remove('hidden');
+}
+
+// ==================== ROUTING & NAVIGASI ====================
+function showView(viewId) {
+  ['view-matches', 'view-detail', 'view-standings', 'view-team'].forEach(id => document.getElementById(id).classList.add('hidden'));
   document.getElementById(viewId).classList.remove('hidden');
   window.scrollTo(0, 0);
 }
 
-function switchView(viewName) {
-  clearRefresh();
-  previousView = currentView;
-  currentView  = viewName;
-
-  // Bottom nav active state
-  document.getElementById('nav-btn-matches').classList.replace('text-[#1C1D5F]', 'text-gray-400') ||
-  document.getElementById('nav-btn-matches').classList.add('text-gray-400');
-  document.getElementById('nav-btn-matches').classList.remove('text-[#1C1D5F]', 'text-red-500');
-  document.getElementById('nav-btn-live').classList.remove('text-[#1C1D5F]', 'text-red-500');
-  document.getElementById('nav-btn-live').classList.add('text-gray-400');
-
-  // Show bottom nav (hidden on detail)
+function switchMainView(viewName) {
+  previousViewName = currentActiveView;
+  currentActiveView = viewName;
   document.getElementById('bottom-nav').classList.remove('hidden');
-
+  
+  const navMatches = document.getElementById('nav-btn-matches');
+  const navStandings = document.getElementById('nav-btn-standings');
   if (viewName === 'matches') {
-    document.getElementById('nav-btn-matches').classList.replace('text-gray-400', 'text-[#1C1D5F]');
-    document.getElementById('nav-btn-matches').classList.add('text-[#1C1D5F]');
-    document.getElementById('nav-btn-matches').classList.remove('text-gray-400');
-    showPage('view-matches');
-    renderDateSlider();
-    loadMatchesData(formatForApi(selectedDate), false);
-    if (isSameDate(selectedDate, new Date())) {
-      activeRefreshTimer = setInterval(() => loadMatchesData(formatForApi(selectedDate), true), 60000);
+    navMatches.classList.add('text-merah');
+    navMatches.classList.remove('text-gray-500');
+    navStandings.classList.add('text-gray-500');
+    navStandings.classList.remove('text-merah');
+    showView('view-matches');
+    if (!document.getElementById("matches-container").innerHTML.trim()) {
+      fetchAndRenderMatches();
     }
-  } else if (viewName === 'live') {
-    document.getElementById('nav-btn-live').classList.add('text-red-500');
-    document.getElementById('nav-btn-live').classList.remove('text-gray-400');
-    showPage('view-live');
-    loadLiveData(false);
-    activeRefreshTimer = setInterval(() => loadLiveData(true), 60000);
+  } else if (viewName === 'standings') {
+    navStandings.classList.add('text-merah');
+    navStandings.classList.remove('text-gray-500');
+    navMatches.classList.add('text-gray-500');
+    navMatches.classList.remove('text-merah');
+    showView('view-standings');
+    fetchAndRenderStandings();
   }
 }
 
-function openDetail(matchId) {
-  clearRefresh();
-  previousView   = currentView;
-  currentView    = 'detail';
-  currentMatchId = matchId;
-
-  // Sembunyikan bottom nav di halaman detail
+function openMatchDetail(matchId) {
+  previousViewName = currentActiveView;
+  currentActiveView = 'detail';
   document.getElementById('bottom-nav').classList.add('hidden');
-
-  // Reset state detail sebelum load
-  resetDetailView();
-  showPage('view-detail');
-  loadMatchDetails(matchId);
+  
+  showSkeleton('scoreboard-skeleton', 'scoreboard-container');
+  document.querySelectorAll('.tab-content').forEach(el => el.innerHTML = '');
+  switchDetailTab('overview');
+  showView('view-detail');
+  loadMatchDetailData(matchId);
 }
 
-function goBack() {
-  // Kembalikan bottom nav
+function goBackFromDetail() {
   document.getElementById('bottom-nav').classList.remove('hidden');
-  // Kembali ke view sebelumnya tanpa reload data (pakai switchView)
-  switchView(previousView === 'detail' ? 'matches' : previousView);
+  switchMainView(previousViewName === 'detail' ? 'matches' : previousViewName);
 }
 
-// ==================== LEAGUE (CACHED) ====================
-async function getSelectedLeagues() {
-  if (cachedLeagues) return cachedLeagues;
-  let all = [];
-  for (const cid of targetCountryIds) {
-    try {
-      const res = await fetch(`https://apiv3.apifootball.com/?action=get_leagues&country_id=${cid}&APIkey=${apiKey}`);
-      const data = await res.json();
-      if (Array.isArray(data)) all.push(...data);
-    } catch (e) { console.error(e); }
-  }
-  cachedLeagues = all
-    .filter(l => targetLeagueIds.includes(parseInt(l.league_id)))
-    .map(l => ({ id: parseInt(l.league_id), name: l.league_name, logo: l.league_logo, country: l.country_name }));
-  return cachedLeagues;
+function goBackFromTeam() {
+  document.getElementById('bottom-nav').classList.remove('hidden');
+  if (previousViewName === 'standings') switchMainView('standings');
+  else switchMainView('matches');
 }
 
-// ==================== STATUS HELPER ====================
-function getMatchStatusDisplay(match) {
-  const statusRaw   = (match.match_status || "").trim();
-  const statusLower = statusRaw.toLowerCase();
-  const homeScore   = match.match_hometeam_score ?? "";
-  const awayScore   = match.match_awayteam_score ?? "";
-
-  const isFinished = ["finished","ft","aet","ap","pen.","after pen."].includes(statusLower)
-    || statusLower.includes("finish") || statusLower === "ft";
-  const isLive = match.match_live === "1"
-    || ["1h","2h","ht","et","p","pen","break"].includes(statusLower)
-    || (statusLower !== "" && !isNaN(statusLower) && !isFinished);
-
-  if (isFinished || isLive) {
-    return `
-      <div class="flex flex-col items-center justify-center">
-        <div class="text-[18px] font-black ${isLive ? 'text-red-500' : 'text-black'}">
-          ${homeScore || '0'} - ${awayScore || '0'}
+// ==================== SKELETON MATCHES ====================
+function renderMatchesSkeleton() {
+  const skeletonContainer = document.getElementById('matches-skeleton');
+  skeletonContainer.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    skeletonContainer.innerHTML += `
+      <div class="mb-6">
+        <div class="flex items-center gap-2 mb-3 px-1">
+          <div class="skeleton skeleton-circle w-5 h-5"></div>
+          <div class="skeleton skeleton-text w-32"></div>
         </div>
-        <div class="text-[10px] uppercase font-bold text-red-500 mt-0.5">
-          ${isLive ? (statusRaw + (isNaN(statusRaw) ? '' : "'")) : "FULL-TIME"}
-        </div>
-      </div>`;
-  }
-  return `
-    <div class="flex flex-col items-center justify-center">
-      <div class="text-[18px] font-black text-black">
-        ${match.match_time ? match.match_time.substring(0,5) : '00:00'}
-      </div>
-      <div class="text-[10px] text-gray-400 font-medium mt-0.5">WIB</div>
-    </div>`;
-}
-
-// ==================== MATCH CARD ====================
-function buildMatchCard(match) {
-  const center = getMatchStatusDisplay(match);
-  return `
-    <div onclick="openDetail('${match.match_id}')"
-      class="flex items-center justify-between p-4 border-b-2 border-gray-100 last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer">
-      <div class="flex items-center gap-3 w-[40%]">
-        <img src="${match.team_home_badge || 'https://placehold.co/24'}" class="w-7 h-7 object-contain shrink-0" onerror="this.src='https://placehold.co/24'">
-        <span class="text-[14px] font-bold truncate">${match.match_hometeam_name}</span>
-      </div>
-      <div class="w-[20%] flex justify-center">${center}</div>
-      <div class="flex items-center gap-3 w-[40%] justify-end text-right">
-        <span class="text-[14px] font-bold truncate">${match.match_awayteam_name}</span>
-        <img src="${match.team_away_badge || 'https://placehold.co/24'}" class="w-7 h-7 object-contain shrink-0" onerror="this.src='https://placehold.co/24'">
-      </div>
-    </div>`;
-}
-
-function buildLeagueBlock(league, matches, extraCardClass = '') {
-  return `
-    <div class="mb-4 bg-white rounded-xl shadow-sm overflow-hidden ${extraCardClass}">
-      <div class="flex items-center gap-3 py-5 px-3 bg-white border-b-2 border-gray-100">
-        <img src="${league.logo || 'https://placehold.co/40'}" class="w-10 h-10 object-contain" alt="">
-        <div>
-          <h2 class="text-[14px] font-bold leading-tight">${league.name}</h2>
-          <p class="text-[11px] text-gray-500 font-normal mt-0.5">${league.country || 'International'}</p>
+        <div class="space-y-2">
+          <div class="skeleton-match-card">
+            <div class="flex items-center gap-3 w-[35%]"><div class="skeleton skeleton-circle w-8 h-8"></div><div class="skeleton skeleton-text w-20"></div></div>
+            <div class="flex flex-col items-center w-[30%]"><div class="skeleton skeleton-text w-12 h-6"></div><div class="skeleton skeleton-text w-14 h-4 mt-1"></div></div>
+            <div class="flex items-center justify-end gap-3 w-[35%]"><div class="skeleton skeleton-text w-20"></div><div class="skeleton skeleton-circle w-8 h-8"></div></div>
+          </div>
+          <div class="skeleton-match-card">
+            <div class="flex items-center gap-3 w-[35%]"><div class="skeleton skeleton-circle w-8 h-8"></div><div class="skeleton skeleton-text w-20"></div></div>
+            <div class="flex flex-col items-center w-[30%]"><div class="skeleton skeleton-text w-12 h-6"></div><div class="skeleton skeleton-text w-14 h-4 mt-1"></div></div>
+            <div class="flex items-center justify-end gap-3 w-[35%]"><div class="skeleton skeleton-text w-20"></div><div class="skeleton skeleton-circle w-8 h-8"></div></div>
+          </div>
         </div>
       </div>
-      <div class="px-2">${matches.map(buildMatchCard).join("")}</div>
-    </div>`;
-}
-
-// ==================== VIEW: MATCHES ====================
-function renderDateSlider() {
-  const slider = document.getElementById("date-slider");
-  slider.innerHTML = "";
-  const today = new Date();
-
-  for (let i = -15; i <= 15; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    const isToday = isSameDate(d, today);
-    const isSel   = isSameDate(d, selectedDate);
-    const dayName = isToday ? "Today" : getShortDay(d);
-    const dateText= `${d.getDate()} ${getShortMonth(d)}`;
-
-    const bgClass      = isSel ? "bg-[#1C1D5F]"     : "bg-transparent hover:bg-gray-100";
-    const textDayClass = isSel ? "text-white"        : "text-gray-500";
-    const textDateClass= isSel ? "text-gray-300"     : "text-gray-400";
-
-    slider.insertAdjacentHTML('beforeend', `
-      <button onclick="selectDate('${formatForApi(d)}')"
-        class="flex flex-col items-center justify-center min-w-[70px] px-2 py-1.5 rounded-xl cursor-pointer transition-colors ${bgClass}">
-        <span class="text-[13px] font-bold ${textDayClass}">${dayName}</span>
-        <span class="text-[11px] font-medium ${textDateClass} mt-0.5">${dateText}</span>
-      </button>`);
+    `;
   }
-
-  // Scroll ke tombol selected
-  setTimeout(() => {
-    const selected = slider.querySelector('.bg-\\[\\#1C1D5F\\]');
-    if (selected) selected.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, 100);
+  skeletonContainer.classList.remove('hidden');
+  document.getElementById('matches-container').classList.add('hidden');
+  document.getElementById('matches-empty').classList.add('hidden');
 }
 
-function selectDate(dateString) {
-  selectedDate = new Date(dateString + "T00:00:00");
-  renderDateSlider();
-  clearRefresh();
-  loadMatchesData(formatForApi(selectedDate), false);
-  if (isSameDate(selectedDate, new Date())) {
-    activeRefreshTimer = setInterval(() => loadMatchesData(formatForApi(selectedDate), true), 60000);
-  }
-}
-
-async function loadMatchesData(targetDate, isSilent = false) {
+// ==================== FETCH MATCHES ====================
+async function fetchAndRenderMatches() {
+  const skeletonDiv = document.getElementById('matches-skeleton');
   const container = document.getElementById("matches-container");
-  const loading   = document.getElementById("matches-loading");
-  const empty     = document.getElementById("matches-empty");
-
-  if (!isSilent) {
-    container.classList.add("hidden");
-    empty.classList.add("hidden");
-    loading.classList.remove("hidden");
-  }
-
-  const leagues = await getSelectedLeagues();
-  const results = await Promise.all(leagues.map(async league => {
-    try {
-      const d    = new Date(targetDate);
-      const prev = new Date(d); prev.setDate(prev.getDate() - 1);
-      const next = new Date(d); next.setDate(next.getDate() + 1);
-      const res  = await fetch(
-        `https://apiv3.apifootball.com/?action=get_events&from=${formatForApi(prev)}&to=${formatForApi(next)}&league_id=${league.id}&timezone=Asia/Jakarta&APIkey=${apiKey}`
-      );
-      const data = await res.json();
-      const matches = Array.isArray(data) && !data.error
-        ? data.filter(m => m.match_date === targetDate).sort((a,b)=>(a.match_time||"").localeCompare(b.match_time||""))
-        : [];
-      return { league, matches };
-    } catch { return { league, matches: [] }; }
-  }));
-
+  const emptyDiv = document.getElementById("matches-empty");
+  
+  renderMatchesSkeleton();
   container.innerHTML = "";
-  let total = 0;
-  results.forEach(({ league, matches }) => {
-    if (!matches.length) return;
-    total += matches.length;
-    container.insertAdjacentHTML('beforeend', buildLeagueBlock(league, matches));
-  });
-
-  if (!isSilent) loading.classList.add("hidden");
-  if (total > 0) {
-    container.classList.remove("hidden");
-    empty.classList.add("hidden");
-  } else if (!isSilent) {
-    container.classList.add("hidden");
-    empty.classList.remove("hidden");
-  }
-}
-
-// ==================== VIEW: LIVE ====================
-async function loadLiveData(isSilent = false) {
-  const container = document.getElementById("live-container");
-  const loading   = document.getElementById("live-loading");
-  const empty     = document.getElementById("live-empty");
-
-  if (!isSilent) {
-    container.classList.add("hidden");
-    empty.classList.add("hidden");
-    loading.classList.remove("hidden");
-  }
-
-  const leagues = await getSelectedLeagues();
-  const results = await Promise.all(leagues.map(async league => {
-    try {
-      const res  = await fetch(
-        `https://apiv3.apifootball.com/?action=get_events&league_id=${league.id}&match_live=1&timezone=Asia/Jakarta&APIkey=${apiKey}`
-      );
-      const data = await res.json();
-      const matches = Array.isArray(data) && !data.error
-        ? data.filter(m => {
-            const s = (m.match_status || "").trim().toLowerCase();
-            return !["finished","ft","aet","ap","pen.","after pen.","cancelled","postponed","canc","postp"].includes(s)
-                   && !s.includes("finish");
-          }).sort((a,b)=>(a.match_time||"").localeCompare(b.match_time||""))
-        : [];
-      return { league, matches };
-    } catch { return { league, matches: [] }; }
-  }));
-
-  // Update live dot indicator
-  const totalLive = results.reduce((sum, r) => sum + r.matches.length, 0);
-  const dot = document.getElementById('live-indicator-dot');
-  if (totalLive > 0) dot.classList.remove('hidden');
-  else dot.classList.add('hidden');
-
-  container.innerHTML = "";
-  let found = 0;
-  results.forEach(({ league, matches }) => {
-    if (!matches.length) return;
-    found++;
-    container.insertAdjacentHTML('beforeend', buildLeagueBlock(league, matches, 'border-2 border-gray-100'));
-  });
-
-  if (!isSilent) loading.classList.add("hidden");
-  if (totalLive > 0) {
-    container.classList.remove("hidden");
-    empty.classList.add("hidden");
-  } else if (!isSilent) {
-    container.classList.add("hidden");
-    empty.classList.remove("hidden");
-  }
-}
-
-// ==================== VIEW: DETAIL ====================
-function resetDetailView() {
-  document.getElementById('league-name-header').innerText = 'Match Detail';
-  document.getElementById('scoreboard-loading').classList.remove('hidden');
-  document.getElementById('scoreboard-container').classList.add('hidden');
-  document.getElementById('scorers-summary').classList.add('hidden');
-  document.getElementById('h2h-container').innerHTML = `
-    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4 text-center text-xs text-gray-400">
-      Memuat data Head-to-Head...
-    </div>`;
-  document.getElementById('stats-container').innerHTML = `
-    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 text-center text-xs text-gray-400">
-      Memuat data statistik pertandingan...
-    </div>`;
-  // Reset tab ke overview
-  switchTab('overview');
-}
-
-async function loadMatchDetails(matchId) {
-  if (!matchId) return;
+  emptyDiv.classList.add("hidden");
+  let totalRendered = 0;
+  
   try {
-    const res   = await fetch(`https://apiv3.apifootball.com/?action=get_events&match_id=${matchId}&APIkey=${apiKey}`);
-    const data  = await res.json();
-    const match = Array.isArray(data) && data.length > 0 ? data[0] : null;
-
-    if (!match) {
-      document.getElementById('scoreboard-loading').innerText = "Gagal memuat data pertandingan.";
-      return;
+    for (const leagueId of TARGET_LEAGUE_IDS) {
+      const leagueRes = await fetch(`${API_BASE_URL}/leagues/${leagueId}`);
+      const leagueJson = await leagueRes.json();
+      const league = leagueJson?.data;
+      if (!league) continue;
+      
+      let seasonId = league.currentseason?.id;
+      if (!seasonId) continue;
+      if (!activeSeasonId) activeSeasonId = seasonId;
+      
+      const standingsRes = await fetch(`${API_BASE_URL}/standings/seasons/${seasonId}`);
+      const standingsJson = await standingsRes.json();
+      const standings = standingsJson?.data || [];
+      if (standings.length === 0) continue;
+      
+      const roundId = standings[0].round_id;
+      const roundRes = await fetch(`${API_BASE_URL}/rounds/${roundId}`);
+      const roundJson = await roundRes.json();
+      const fixtureSummaries = roundJson?.data?.fixtures || [];
+      if (fixtureSummaries.length === 0) continue;
+      
+      let fixturesHTML = '';
+      for (const summary of fixtureSummaries) {
+        const fixtureRes = await fetch(`${API_BASE_URL}/fixtures/${summary.id}?include=participants,scores`);
+        const fixtureJson = await fixtureRes.json();
+        const fixtureData = fixtureJson.data;
+        if (!fixtureData) continue;
+        
+        const participants = fixtureData.participants || [];
+        const homeTeam = participants.find(p => p.meta?.location === 'home') || {};
+        const awayTeam = participants.find(p => p.meta?.location === 'away') || {};
+        
+        const homeScore = fixtureData.scores?.find(s => s.description === "CURRENT" && s.score?.participant === "home")?.score.goals ?? "0";
+        const awayScore = fixtureData.scores?.find(s => s.description === "CURRENT" && s.score?.participant === "away")?.score.goals ?? "0";
+        const statusRaw = fixtureData.state?.short_name || "NS";
+        const statusLabel = statusRaw === "FT" ? "FT" : (statusRaw === "NS" ? "Belum mulai" : statusRaw);
+        
+        fixturesHTML += `
+          <div class="flex items-center justify-between py-3 px-3 bg-kartu rounded-xl mb-3 cursor-pointer transition-all" onclick="openMatchDetail(${fixtureData.id})">
+            <div class="flex items-center gap-3 w-[35%]">
+              <img src="${homeTeam.image_path || 'https://placehold.co/40'}" class="w-8 h-8 object-contain" alt="">
+              <span class="text-sm font-semibold text-gray-200 truncate">${escapeHtml(homeTeam.name) || 'TBA'}</span>
+            </div>
+            <div class="flex flex-col items-center w-[30%]">
+              <span class="text-xl font-black text-white">${homeScore} - ${awayScore}</span>
+              <span class="text-[10px] font-bold text-merah bg-gray-800 px-2 py-0.5 rounded-full mt-1">${statusLabel}</span>
+            </div>
+            <div class="flex items-center justify-end gap-3 w-[35%]">
+              <span class="text-sm font-semibold text-gray-200 truncate text-right">${escapeHtml(awayTeam.name) || 'TBA'}</span>
+              <img src="${awayTeam.image_path || 'https://placehold.co/40'}" class="w-8 h-8 object-contain" alt="">
+            </div>
+          </div>`;
+        totalRendered++;
+      }
+      
+      if (fixturesHTML) {
+        container.insertAdjacentHTML('beforeend', `
+          <div class="mb-6 bg-transparent">
+            <div class="mb-3 flex items-center gap-2 px-1">
+              <img src="${league.image_path}" class="w-10 h-10 object-contain">
+              <h3 class="font-bold text-md text-white tracking-wider">${escapeHtml(league.name)}</h3>
+            </div>
+            <div class="space-y-2">${fixturesHTML}</div>
+          </div>
+        `);
+      }
     }
+    
+    skeletonDiv.classList.add('hidden');
+    if (totalRendered > 0) {
+      container.classList.remove('hidden');
+    } else {
+      emptyDiv.classList.remove('hidden');
+    }
+  } catch (error) {
+    console.error(error);
+    skeletonDiv.classList.add('hidden');
+    emptyDiv.classList.remove('hidden');
+  }
+  
+  // sembunyikan global loader (hanya sekali)
+  const globalLoader = document.getElementById('global-loading');
+  if (globalLoader && !globalLoader.classList.contains('fade-out')) {
+    globalLoader.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => globalLoader.remove(), 500);
+  }
+}
 
-    renderBaseAndEvents(match);
+async function loadBanner() {
+  const response = await fetch(`${API_BASE_URL}/benner`);
+  const data = await response.json();
+  
+  document.getElementById("benner").innerHTML = `
+        <div class="relative overflow-hidden rounded-2xl bg-latar h-32 flex items-center px-5">
+            <img src="${data.image_benner}" class="absolute left-0 bottom-0 h-36 object-contain">
 
-    const [linRes, h2hRes, stRes] = await Promise.all([
-      fetch(`https://apiv3.apifootball.com/?action=get_lineups&match_id=${matchId}&APIkey=${apiKey}`),
-      fetch(`https://apiv3.apifootball.com/?action=get_H2H&firstTeamId=${match.match_hometeam_id}&secondTeamId=${match.match_awayteam_id}&APIkey=${apiKey}`),
-      fetch(`https://apiv3.apifootball.com/?action=get_statistics&match_id=${matchId}&APIkey=${apiKey}`)
-    ]);
+            <div class="ml-28 flex-1">
+                <img src="${data.image_logo}" class="w-24">
 
-    const [linData, h2hData, stData] = await Promise.all([linRes.json(), h2hRes.json(), stRes.json()]);
+                <p class="text-gray-400 text-sm mt-2 max-w-[180px] leading-tight">
+                    ${data.desc}
+                </p>
+            </div>
 
-    renderLineups(linData, matchId);
-    renderHeadToHead(h2hData, match);
-    renderStatistics(stData, matchId);
+            <a href="${data.link}"
+               target="_blank"
+               class="bg-kartu transition text-white font-bold text-2xl px-8 py-4 rounded-2xl">
+                Join
+            </a>
+        </div>
+    `;
+}
 
+loadBanner();
+// ==================== STANDINGS ====================
+async function fetchAndRenderStandings() {
+  const skeletonDiv = document.getElementById('standings-skeleton');
+  const container = document.getElementById("standings-container");
+  const emptyDiv = document.getElementById("standings-empty");
+  
+  skeletonDiv.classList.remove('hidden');
+  container.classList.add('hidden');
+  emptyDiv.classList.add('hidden');
+  container.innerHTML = "";
+  
+  try {
+    let seasonId = activeSeasonId;
+    if (!seasonId) {
+      const leagueRes = await fetch(`${API_BASE_URL}/leagues/${TARGET_LEAGUE_IDS[0]}`);
+      const leagueJson = await leagueRes.json();
+      seasonId = leagueJson?.data?.currentseason?.id;
+      if (!seasonId) throw new Error("No season ID");
+      activeSeasonId = seasonId;
+    }
+    
+    const standingsRes = await fetch(`${API_BASE_URL}/standings/seasons/${seasonId}`);
+    const standingsJson = await standingsRes.json();
+    let allStandings = standingsJson?.data || [];
+    if (allStandings.length === 0) throw new Error("Standings kosong");
+    
+    let finalStandings = allStandings.filter(s => s.group_id !== null);
+    if (finalStandings.length === 0) {
+      const maxStageId = Math.max(...allStandings.map(s => s.stage_id));
+      finalStandings = allStandings.filter(s => s.stage_id === maxStageId);
+    }
+    
+    const groupsMap = new Map();
+    for (const standing of finalStandings) {
+      const groupId = standing.group_id;
+      if (!groupId) continue;
+      if (!groupsMap.has(groupId)) {
+        groupsMap.set(groupId, {
+          groupId: groupId,
+          groupName: standing.group?.name || `Grup ${groupId}`,
+          standings: []
+        });
+      }
+      groupsMap.get(groupId).standings.push(standing);
+    }
+    if (groupsMap.size === 0) throw new Error("Tidak ada grup ditemukan");
+    
+    const leagueRes = await fetch(`${API_BASE_URL}/leagues/${TARGET_LEAGUE_IDS[0]}`);
+    const leagueJson = await leagueRes.json();
+    const leagueName = leagueJson?.data?.name || "Klasemen Liga";
+    
+    let allTablesHTML = '';
+    const sortedGroups = Array.from(groupsMap.values()).sort((a, b) => {
+      if (a.groupName.includes('Championship')) return -1;
+      if (b.groupName.includes('Championship')) return 1;
+      return a.groupName.localeCompare(b.groupName);
+    });
+    
+    for (const group of sortedGroups) {
+      group.standings.sort((a, b) => a.position - b.position);
+      let tableHTML = `
+        <div class="mb-8 bg-kartu rounded shadow-sm border border-gray-800 overflow-hidden">
+          <div class="bg-gradient-to-r from-merah to-kuning px-4 py-3">
+            <h3 class="text-sm font-black text-white tracking-wide">${escapeHtml(group.groupName)}</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-800 border-b border-gray-700">
+                <tr class="text-left text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                  <th class="px-3 py-3 w-12">Pos</th><th class="px-2 py-3">Tim</th><th class="px-2 py-3 text-center">P</th>
+                  <th class="px-2 py-3 text-center">M</th><th class="px-2 py-3 text-center">S</th><th class="px-2 py-3 text-center">K</th>
+                  <th class="px-2 py-3 text-center">GM</th><th class="px-2 py-3 text-center">GK</th><th class="px-3 py-3 text-center font-black text-merah">Poin</th>
+                </tr>
+              </thead>
+              <tbody>`;
+      for (const standing of group.standings) {
+        const participant = standing.participant;
+        let teamName = participant?.name || "Tim";
+        let teamLogo = participant?.image_path || "";
+        let played = 0, wins = 0, draws = 0, losses = 0, goalsFor = 0, goalsAgainst = 0;
+        if (standing.details && Array.isArray(standing.details)) {
+          for (const det of standing.details) {
+            switch (det.type_id) {
+              case 129: played = det.value; break; case 130: wins = det.value; break; case 131: draws = det.value; break;
+              case 132: losses = det.value; break; case 133: goalsFor = det.value; break; case 134: goalsAgainst = det.value; break;
+            }
+          }
+        }
+        tableHTML += `
+          <tr class="border-b border-gray-800 hover:bg-gray-800/50 transition">
+            <td class="px-3 py-2.5 font-bold text-gray-300">${standing.position}</td>
+            <td class="px-2 py-2.5 flex items-center gap-2">
+              <img src="${teamLogo}" class="w-5 h-5 object-contain" onerror="this.src='https://placehold.co/20'">
+              <span class="font-semibold text-gray-200 truncate max-w-[120px] cursor-pointer hover:text-merah hover:underline" onclick="openTeamSquad(${standing.participant_id})">${escapeHtml(teamName)}</span>
+            </td>
+            <td class="px-2 py-2.5 text-center font-medium text-gray-300">${played}</td>
+            <td class="px-2 py-2.5 text-center text-gray-300">${wins}</td><td class="px-2 py-2.5 text-center text-gray-300">${draws}</td>
+            <td class="px-2 py-2.5 text-center text-gray-300">${losses}</td><td class="px-2 py-2.5 text-center text-gray-300">${goalsFor}</td>
+            <td class="px-2 py-2.5 text-center text-gray-300">${goalsAgainst}</td>
+            <td class="px-3 py-2.5 text-center font-black text-merah">${standing.points || 0}</td>
+          </tr>`;
+      }
+      tableHTML += `</tbody></table></div></div>`;
+      allTablesHTML += tableHTML;
+    }
+    allTablesHTML += `<div class="text-center text-[10px] text-gray-500 py-2">${escapeHtml(leagueName)} • Update terbaru</div>`;
+    container.innerHTML = allTablesHTML;
+    skeletonDiv.classList.add('hidden');
+    container.classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+    skeletonDiv.classList.add('hidden');
+    emptyDiv.classList.remove('hidden');
+  }
+}
+
+// ==================== TEAM SQUAD ====================
+async function openTeamSquad(teamId) {
+  if (!activeSeasonId) return;
+  currentTeamIdForSquad = teamId;
+  document.getElementById('bottom-nav').classList.add('hidden');
+  showView('view-team');
+  showSkeleton('squad-skeleton', 'squad-container');
+  await loadSquadData(teamId, activeSeasonId);
+}
+
+async function loadSquadData(teamId, seasonId) {
+  const skeletonDiv = document.getElementById('squad-skeleton');
+  const container = document.getElementById('squad-container');
+  const emptyDiv = document.getElementById('squad-empty');
+  container.classList.add('hidden');
+  emptyDiv.classList.add('hidden');
+  skeletonDiv.classList.remove('hidden');
+  
+  let hasData = false;
+  try {
+    const squadRes = await fetch(`${API_BASE_URL}/squads/seasons/${seasonId}/teams/${teamId}`);
+    const squadJson = await squadRes.json();
+    let playersData = squadJson?.data || [];
+    if (playersData.length === 0) throw new Error("Tidak ada pemain");
+    hasData = true;
+    
+    const teamInfo = playersData[0]?.team || {};
+    const teamName = teamInfo.name || "Tim";
+    const teamLogo = teamInfo.image_path || "";
+    document.getElementById("team-header").innerHTML = `
+      <img src="${teamLogo}" class="w-10 h-10 object-contain bg-black rounded-full p-1 shadow">
+      <h2 class="text-base font-bold text-white">${escapeHtml(teamName)}</h2>`;
+    
+    const positionMap = new Map();
+    playersData.forEach(item => {
+      const player = item.player;
+      if (!player) return;
+      const posName = player.position?.name || "Lainnya";
+      if (!positionMap.has(posName)) positionMap.set(posName, []);
+      positionMap.get(posName).push(item);
+    });
+    
+    const posOrder = ["Goalkeeper", "Defender", "Midfielder", "Attacker"];
+    const sortedPositions = Array.from(positionMap.keys()).sort((a,b)=>{
+      let idxA = posOrder.indexOf(a), idxB = posOrder.indexOf(b);
+      if(idxA===-1) idxA=999; if(idxB===-1) idxB=999;
+      return idxA-idxB;
+    });
+    
+    let allHTML = "";
+    for(const posName of sortedPositions) {
+      const posPlayers = positionMap.get(posName);
+      allHTML += `<div class="bg-kartu rounded-2xl shadow-sm border border-gray-800 overflow-hidden">
+        <div class="bg-gray-800 px-4 py-2 border-b border-gray-700"><h3 class="text-xs font-black text-merah uppercase tracking-wider">${escapeHtml(posName)}</h3></div>
+        <div class="divide-y divide-gray-800">`;
+      for(const item of posPlayers) {
+        const player = item.player;
+        const jersey = item.jersey_number || "-";
+        const playerName = player.name || "Tidak diketahui";
+        const photo = player.image_path || "https://placehold.co/40";
+        let age = "-";
+        if(player.date_of_birth){
+          const birthDate = new Date(player.date_of_birth);
+          const today = new Date();
+          let ageNum = today.getFullYear() - birthDate.getFullYear();
+          const monthDiff = today.getMonth() - birthDate.getMonth();
+          if(monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) ageNum--;
+          age = ageNum;
+        }
+        const nationality = player.nationality?.name || "";
+        const flagUrl = player.nationality?.image_path || "";
+        allHTML += `<div class="flex items-center justify-between px-4 py-3 hover:bg-gray-800/50 transition">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden"><img src="${photo}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/40'"></div>
+            <div><p class="text-sm font-semibold text-gray-200">${escapeHtml(playerName)}</p>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-500 mt-0.5">
+              <span class="inline-flex items-center gap-1"><span class="font-bold text-gray-400">No.</span> ${jersey}</span>
+              <span class="inline-flex items-center gap-1"><span class="font-bold text-gray-400">Umur</span> ${age}</span>
+              ${nationality ? `<span class="inline-flex items-center gap-1"><img src="${flagUrl}" class="w-4 h-4 object-contain" onerror="this.style.display='none'"> ${escapeHtml(nationality)}</span>` : ''}
+            </div></div>
+          </div>
+          <div class="text-right"><span class="text-xs text-gray-500 italic">${posName}</span></div>
+        </div>`;
+      }
+      allHTML += `</div></div>`;
+    }
+    container.innerHTML = allHTML;
   } catch(e) {
     console.error(e);
-    document.getElementById('scoreboard-loading').innerText = "Terjadi kesalahan saat memuat.";
+    hasData = false;
+  }
+  skeletonDiv.classList.add('hidden');
+  if(hasData) container.classList.remove('hidden');
+  else emptyDiv.classList.remove('hidden');
+}
+
+// ==================== DETAIL MATCH (TABS) ====================
+async function loadMatchDetailData(matchId) {
+  showSkeleton('scoreboard-skeleton', 'scoreboard-container');
+  try {
+    const fixtureRes = await fetch(`${API_BASE_URL}/fixtures/${matchId}?include=participants,scores,events,statistics,lineups,venue,formations`);
+    const fixtureJson = await fixtureRes.json();
+    const fixtureData = fixtureJson.data;
+    if (!fixtureData) throw new Error("Tidak ada data match");
+    
+    const participants = fixtureData.participants || [];
+    const homeTeam = participants.find(p => p.meta?.location === 'home') || {};
+    const awayTeam = participants.find(p => p.meta?.location === 'away') || {};
+    const homeId = homeTeam.id;
+    const awayId = awayTeam.id;
+    
+    const homeScore = fixtureData.scores?.find(s => s.description === "CURRENT" && s.score?.participant === "home")?.score.goals ?? "0";
+    const awayScore = fixtureData.scores?.find(s => s.description === "CURRENT" && s.score?.participant === "away")?.score.goals ?? "0";
+    const statusRaw = fixtureData.state?.short_name || "NS";
+    const statusLabel = statusRaw === "FT" ? "FT" : (statusRaw === "NS" ? "Belum mulai" : statusRaw);
+    
+    document.getElementById('home-name').innerText = homeTeam.name || '-';
+    document.getElementById('away-name').innerText = awayTeam.name || '-';
+    document.getElementById('home-logo').src = homeTeam.image_path || 'https://placehold.co/60';
+    document.getElementById('away-logo').src = awayTeam.image_path || 'https://placehold.co/60';
+    document.getElementById('match-score').innerText = `${homeScore} - ${awayScore}`;
+    document.getElementById('match-status').innerText = statusLabel;
+    
+    hideSkeletonAndShow('scoreboard-skeleton', 'scoreboard-container');
+    
+    // render tabs
+    renderOverviewTab(fixtureData, homeId, awayId);
+    renderEventsTab(fixtureData, homeId, awayId);
+    renderStatsTab(fixtureData, homeId, awayId);
+    renderLineupTab(fixtureData, homeId, awayId);
+    
+  } catch(err) {
+    console.error(err);
+    document.getElementById('scoreboard-skeleton').classList.add('hidden');
   }
 }
 
-function renderBaseAndEvents(match) {
-  document.getElementById("scoreboard-loading").classList.add("hidden");
-  document.getElementById("scoreboard-container").classList.remove("hidden");
-  document.getElementById("scorers-summary").classList.remove("hidden");
-
-  document.getElementById("league-name-header").innerText = match.league_name;
-  document.getElementById("info-league").innerText = match.league_name;
-  document.getElementById("info-stage").innerText  = match.country_name || "International";
-  document.getElementById("info-date").innerText   = match.match_date;
-  document.getElementById("info-time").innerText   = `${match.match_time} WIB`;
-
-  document.getElementById("home-name").innerText = match.match_hometeam_name;
-  document.getElementById("away-name").innerText = match.match_awayteam_name;
-  document.getElementById("home-logo").src = match.team_home_badge || "https://placehold.co/60";
-  document.getElementById("away-logo").src = match.team_away_badge || "https://placehold.co/60";
-  document.getElementById("match-score").innerText = `${match.match_hometeam_score} - ${match.match_awayteam_score}`;
-  document.getElementById("match-status").innerText = match.match_status === "Finished" ? "Full-Time" : (match.match_status || "");
-
-  // Timeline
-  const timelineContainer = document.getElementById("timeline-container");
-  timelineContainer.innerHTML = "";
-  const homeScorers = [], awayScorers = [];
-  let allEvents = [];
-
-  if (Array.isArray(match.goalscorer)) {
-    match.goalscorer.forEach(g => {
-      allEvents.push({ ...g, type: 'goal', minute: parseInt(g.time) || 0 });
-      if (g.home_scorer) homeScorers.push(`${g.home_scorer} <span class="text-[10px] text-white/50 ml-1">(${g.time}')</span>`);
-      if (g.away_scorer) awayScorers.push(`<span class="text-[10px] text-white/50 mr-1">(${g.time}')</span> ${g.away_scorer}`);
-    });
-  }
-  if (Array.isArray(match.cards)) {
-    match.cards.forEach(c => allEvents.push({ ...c, type: 'card', minute: parseInt(c.time) || 0 }));
-  }
-
-  document.getElementById("home-scorers-list").innerHTML = homeScorers.map(s => `<div>${s}</div>`).join("");
-  document.getElementById("away-scorers-list").innerHTML = awayScorers.map(s => `<div>${s}</div>`).join("");
-
-  if (allEvents.length > 0) {
-    allEvents.sort((a,b) => a.minute - b.minute);
-    allEvents.forEach(ev => {
-      const isHome = !!(ev.home_fault || ev.home_scorer);
-      let icon = "⚽", detail = "";
-      if (ev.type === 'goal') {
-        detail = `<strong class="text-gray-900">Gol!</strong> ${ev.home_scorer || ev.away_scorer} <span class="text-gray-500">${ev.info ? `(${ev.info})` : ''}</span>`;
-      } else if (ev.type === 'card') {
-        const isY = ev.card.toLowerCase().includes("yellow");
-        icon   = isY ? "🟨" : "🟥";
-        detail = `Kartu ${isY ? 'Kuning' : 'Merah'}: ${ev.home_fault || ev.away_fault}`;
-      }
-      timelineContainer.insertAdjacentHTML("beforeend", `
-        <div class="relative flex items-center justify-between ${isHome ? 'text-left' : 'flex-row-reverse text-right'} py-1">
-          <span class="absolute -left-[31px] bg-white border-2 border-gray-300 w-4 h-4 rounded-full z-10"></span>
-          <div class="w-[85%] flex items-center ${isHome ? 'flex-row' : 'flex-row-reverse'} gap-2">
-            <span class="text-[11px] font-bold text-[#1C1D5F] bg-[#1C1D5F]/10 px-1.5 py-0.5 rounded border border-[#1C1D5F]/20 shadow-sm">${ev.time}'</span>
-            <span class="text-sm text-gray-700">${detail}</span>
-          </div>
-          <div class="w-[15%] flex justify-center"><span class="text-xl">${icon}</span></div>
-        </div>`);
-    });
-  } else {
-    timelineContainer.innerHTML = `<p class="text-xs text-gray-400 py-2">Tidak ada log kronologi kejadian pertandingan.</p>`;
-  }
-}
-
-function renderStatistics(statsData, matchId) {
-  const container     = document.getElementById("stats-container");
-  const matchIdKey    = matchId.toString();
-  const targetStats   = statsData[matchIdKey] || statsData;
-
-  if (!targetStats?.statistics?.length) {
-    container.innerHTML = `<div class="bg-gray-50 text-center p-8 text-sm text-gray-500 rounded-xl border border-gray-200">Statistik pertandingan belum tersedia untuk laga ini.</div>`;
-    return;
-  }
-
-  const rawStats = targetStats.statistics;
-  const getStat  = t => rawStats.find(s => s.type.toLowerCase() === t.toLowerCase());
-
-  const onT = getStat("On Target"), offT = getStat("Off Target");
-  if (onT && offT && !getStat("Total Shots")) {
-    rawStats.push({ type:"Total Shots", home:(parseInt(onT.home||0)+parseInt(offT.home||0)).toString(), away:(parseInt(onT.away||0)+parseInt(offT.away||0)).toString() });
-  }
-
-  const groups = {
-    "Statistik Utama": ["Ball Possession","Total Shots","On Target","Corners"],
-    "Tembakan":        ["Total Shots","On Target","Off Target"],
-    "Serangan":        ["Corners","Free Kick","Attacks","Dangerous Attacks"],
-    "Lainnya":         ["Throw In","Goal Kick","Substitution","Penalty"]
-  };
-  const labels = {
-    "Ball Possession":"Penguasaan bola","Total Shots":"Total tembakan","On Target":"Tembakan ke arah gawang",
-    "Off Target":"Tembakan ke luar gawang","Corners":"Tendangan Sudut","Free Kick":"Tendangan Bebas",
-    "Throw In":"Lemparan Ke Dalam","Attacks":"Serangan","Dangerous Attacks":"Serangan Berbahaya",
-    "Goal Kick":"Tendangan Gawang","Substitution":"Pergantian Pemain","Penalty":"Penalti"
-  };
-
-  let html = "";
-  for (const [groupTitle, types] of Object.entries(groups)) {
-    let items = "";
-    for (const type of types) {
-      const stat = getStat(type);
-      if (!stat) continue;
-      const hStr = stat.home || "0", aStr = stat.away || "0";
-      const hVal = parseFloat(hStr.replace("%","")) || 0;
-      const aVal = parseFloat(aStr.replace("%","")) || 0;
-      const total = hVal + aVal;
-      const hW = total > 0 ? (hVal/total)*100 : 0;
-      const aW = total > 0 ? (aVal/total)*100 : 0;
-
-      items += `
-        <div class="space-y-1.5">
-          <div class="flex justify-between text-[13px] font-bold text-gray-800 px-0.5">
-            <span>${hStr}</span>
-            <span class="text-xs text-gray-500 font-semibold">${labels[stat.type] || stat.type}</span>
-            <span>${aStr}</span>
-          </div>
-          <div class="flex w-full h-[6px] bg-gray-200 rounded-full overflow-hidden">
-            <div class="w-1/2 flex justify-end bg-gray-200 pr-[1px]">
-              <div class="h-full bg-[#1C1D5F] rounded-l-full transition-all duration-500" style="width:${hW}%"></div>
-            </div>
-            <div class="w-1/2 flex justify-start bg-gray-200 pl-[1px]">
-              <div class="h-full bg-red-500 rounded-r-full transition-all duration-500" style="width:${aW}%"></div>
-            </div>
-          </div>
-        </div>`;
-    }
-    if (items) {
-      html += `
-        <div class="space-y-3.5">
-          <h3 class="text-[11px] font-bold text-[#1C1D5F] tracking-wider uppercase px-0.5">${groupTitle}</h3>
-          <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4 space-y-4">${items}</div>
-        </div>`;
-    }
-  }
-  container.innerHTML = html || `<div class="text-center p-6 text-gray-400">Statistik belum siap dimuat.</div>`;
-}
-
-function renderLineups(lineupsData, matchId) {
-  const key      = matchId.toString();
-  const container= lineupsData[key] || lineupsData;
-  const lineup   = container?.lineup;
-
-  if (!lineup?.home || !lineup?.away) {
-    document.getElementById("tab-lineup").innerHTML = `
-      <div class="bg-gray-50 text-center p-8 text-sm text-gray-500 rounded-xl border border-gray-200">
-        Line-up susunan pemain belum tersedia untuk laga ini.
-      </div>`;
-    return;
-  }
-
-  document.getElementById("home-coach").innerText = lineup.home.coach?.[0]?.lineup_player || "Unknown";
-  document.getElementById("away-coach").innerText = lineup.away.coach?.[0]?.lineup_player || "Unknown";
-
-  const homeStarter = document.getElementById("home-starting-players");
-  const awayStarter = document.getElementById("away-starting-players");
-  const homeSubs    = document.getElementById("home-substitute-players");
-  const awaySubs    = document.getElementById("away-substitute-players");
-
-  const playerRow = (p, isHome) => `
-    <div class="flex items-center gap-2.5 py-2 border-b border-gray-100 last:border-0 ${isHome ? '' : 'flex-row-reverse text-right'}">
-      <span class="w-6 shrink-0 text-center text-[10px] font-extrabold
-        ${isHome ? 'text-[#1C1D5F] bg-[#1C1D5F]/10 border border-[#1C1D5F]/20' : 'text-red-600 bg-red-50 border border-red-200'}
-        py-0.5 rounded shadow-sm">${p.lineup_number || '-'}</span>
-      <span class="text-gray-800 font-semibold text-[13px] truncate">${p.lineup_player}</span>
-    </div>`;
-
-  const subRow = (p, isHome) => `
-    <div class="flex items-center gap-2.5 py-2 border-b border-gray-100 last:border-0 ${isHome ? '' : 'flex-row-reverse text-right'}">
-      <span class="w-5 shrink-0 text-center text-[10px] font-bold text-gray-500 bg-gray-100 px-1 rounded border border-gray-200">${p.lineup_number || '-'}</span>
-      <span class="text-gray-600 text-[13px] font-medium truncate">${p.lineup_player}</span>
-    </div>`;
-
-  homeStarter.innerHTML = (lineup.home.starting_lineups || []).map(p => playerRow(p, true)).join("") || `<p class="text-xs text-gray-400 py-2">Belum tersedia.</p>`;
-  awayStarter.innerHTML = (lineup.away.starting_lineups || []).map(p => playerRow(p, false)).join("") || `<p class="text-xs text-gray-400 py-2">Belum tersedia.</p>`;
-  homeSubs.innerHTML    = (lineup.home.substitutes || []).length ? (lineup.home.substitutes || []).map(p => subRow(p, true)).join("") : `<p class="text-xs text-gray-400 py-2">Tidak ada pemain cadangan.</p>`;
-  awaySubs.innerHTML    = (lineup.away.substitutes || []).length ? (lineup.away.substitutes || []).map(p => subRow(p, false)).join("") : `<p class="text-xs text-gray-400 py-2 text-right">Tidak ada pemain cadangan.</p>`;
-}
-
-function renderHeadToHead(h2hData, matchEvent) {
-  const h2hContainer = document.getElementById("h2h-container");
-  const h2hMatches   = Array.isArray(h2hData?.firstTeam_VS_secondTeam) ? h2hData.firstTeam_VS_secondTeam : [];
-
-  if (!h2hMatches.length) {
-    h2hContainer.innerHTML = `
-      <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider px-1 mt-4 mb-2">Head to Heads</h3>
-      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-6 text-center flex flex-col justify-center items-center min-h-[120px]">
-        <h4 class="text-[14px] font-bold text-gray-800">First Encounter Ahead!</h4>
-        <p class="text-[12px] text-gray-500 mt-1">These teams haven't faced each other yet.</p>
-        <div class="flex justify-center gap-1.5 mt-4">
-          <span class="w-1.5 h-1.5 bg-[#1C1D5F] rounded-full"></span>
-          <span class="w-1.5 h-1.5 bg-gray-300 rounded-full"></span>
-          <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
-        </div>
-      </div>`;
-    return;
-  }
-
-  let homeWins = 0, awayWins = 0, draws = 0;
-  h2hMatches.forEach(m => {
-    const h = parseInt(m.match_hometeam_score), a = parseInt(m.match_awayteam_score);
-    if (h === a) draws++;
-    else {
-      const winner = h > a ? m.match_hometeam_name : m.match_awayteam_name;
-      if (winner === matchEvent.match_hometeam_name) homeWins++;
-      else awayWins++;
-    }
+function renderOverviewTab(fixture, homeId, awayId) {
+  const section = document.getElementById("tab-overview");
+  const events = fixture.events || [];
+  const goalEvents = events.filter(e => [14,16,17].includes(e.type_id));
+  let homeScorers = '', awayScorers = '';
+  goalEvents.forEach(e => {
+    const isPenalty = e.type_id===16?' (P)':'';
+    const isOwn = e.type_id===17?' (OG)':'';
+    const html = `<div class="text-xs text-gray-400 font-medium mb-1.5 flex items-center gap-1"><span class="text-[10px]">⚽</span> ${e.minute}' - ${e.player_name}${isPenalty}${isOwn}</div>`;
+    if(e.participant_id === homeId) homeScorers += html;
+    else if(e.participant_id === awayId) awayScorers += html;
   });
-
-  h2hContainer.innerHTML = `
-    <h3 class="text-[11px] font-bold text-[#1C1D5F] uppercase tracking-wider px-1 mt-4 mb-2">Head to Heads</h3>
-    <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-4 space-y-4">
-      <div class="grid grid-cols-3 text-center border-b border-gray-100 pb-3.5">
-        <div>
-          <div class="text-[13px] font-bold text-gray-800">${homeWins} Wins</div>
-          <div class="w-10 h-[4px] bg-[#1C1D5F] rounded-full mx-auto mt-1.5"></div>
-        </div>
-        <div>
-          <div class="text-[13px] font-bold text-gray-800">${draws} Draws</div>
-          <div class="w-10 h-[4px] bg-gray-300 rounded-full mx-auto mt-1.5"></div>
-        </div>
-        <div>
-          <div class="text-[13px] font-bold text-gray-800">${awayWins} Wins</div>
-          <div class="w-10 h-[4px] bg-red-500 rounded-full mx-auto mt-1.5"></div>
-        </div>
-      </div>
-      <div class="space-y-4" id="h2h-grouped-list"></div>
-    </div>`;
-
-  const listTarget = document.getElementById("h2h-grouped-list");
-  const leagueGroups = {};
-  h2hMatches.forEach(m => {
-    if (!leagueGroups[m.league_name]) leagueGroups[m.league_name] = {};
-    const year = m.match_date ? m.match_date.split("-")[0] : "N/A";
-    if (!leagueGroups[m.league_name][year]) leagueGroups[m.league_name][year] = [];
-    leagueGroups[m.league_name][year].push(m);
-  });
-
-  for (const [leagueName, yearGroups] of Object.entries(leagueGroups)) {
-    let body = "";
-    for (const [year, ms] of Object.entries(yearGroups)) {
-      body += `
-        <div class="flex items-start gap-3 py-2 border-b border-gray-200 last:border-0">
-          <div class="text-[11px] font-bold text-gray-400 shrink-0 min-w-[36px] pt-1">${year}</div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
-            ${ms.map(m => {
-              const dRaw = new Date(m.match_date);
-              const dStr = !isNaN(dRaw) ? dRaw.toLocaleDateString('id-ID', { day:'numeric', month:'short' }) : m.match_date;
-              return `
-                <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-[12px] hover:bg-gray-100 transition-colors">
-                  <span class="text-gray-500 font-medium">${dStr}</span>
-                  <div class="flex items-center gap-2 mx-auto">
-                    <span class="font-bold text-gray-800 max-w-[75px] truncate">${m.match_hometeam_name}</span>
-                    <span class="bg-white text-[11px] font-black text-[#1C1D5F] px-2 py-0.5 rounded border border-gray-200 tracking-wide shadow-sm">
-                      ${m.match_hometeam_score} - ${m.match_awayteam_score}
-                    </span>
-                    <span class="font-bold text-gray-800 max-w-[75px] truncate">${m.match_awayteam_name}</span>
-                  </div>
-                </div>`;
-            }).join("")}
-          </div>
-        </div>`;
-    }
-
-    const block = document.createElement("div");
-    block.className = "space-y-1.5 mt-2";
-    block.innerHTML = `
-      <div class="text-[11px] font-bold text-gray-500 flex items-center gap-1 px-1 uppercase tracking-wide">
-        <span>⚽</span> ${leagueName}
-      </div>
-      <div class="bg-white border border-gray-200 shadow-sm rounded-xl p-3">${body}</div>`;
-    listTarget.appendChild(block);
-  }
+  const scorersHTML = (homeScorers || awayScorers) ? `<div class="bg-kartu border border-gray-800 shadow-sm rounded p-4"><div class="flex justify-between gap-4"><div class="w-1/2 border-r border-gray-800 pr-2">${homeScorers||'<span class="text-xs text-gray-500 italic">-</span>'}</div><div class="w-1/2 pl-2 text-right flex flex-col items-end">${awayScorers||'<span class="text-xs text-gray-500 italic">-</span>'}</div></div></div>` : '';
+  
+  const stats = fixture.statistics || [];
+  const getStat = (typeId) => {
+    const h = stats.find(s => s.type_id===typeId && s.participant_id===homeId)?.data?.value ?? 0;
+    const a = stats.find(s => s.type_id===typeId && s.participant_id===awayId)?.data?.value ?? 0;
+    return {home:h, away:a};
+  };
+  const corners = getStat(34);
+  const totalCorners = corners.home+corners.away || 1;
+  const cornerHomePct = (corners.home/totalCorners)*100;
+  const venue = fixture.venue || {};
+  const formations = fixture.formations || [];
+  const homeForm = formations.find(f=>f.participant_id===homeId)?.formation||'-';
+  const awayForm = formations.find(f=>f.participant_id===awayId)?.formation||'-';
+  
+  const infoHTML = `<div class="bg-kartu border border-gray-800 shadow-sm rounded p-5 space-y-4"><h4 class="text-xs font-black text-merah uppercase tracking-wider border-b border-gray-800 pb-2">Info Pertandingan</h4><div class="grid grid-cols-2 gap-y-4 gap-x-2 text-xs"><div><p class="text-gray-500 font-medium mb-0.5">Stadion</p><p class="font-bold text-gray-200 truncate">${venue.name||'-'}</p></div><div><p class="text-gray-500 font-medium mb-0.5">Kota</p><p class="font-bold text-gray-200">${venue.city_name||'-'}</p></div><div><p class="text-gray-500 font-medium mb-0.5">Kapasitas</p><p class="font-bold text-gray-200">${venue.capacity?Number(venue.capacity).toLocaleString('id-ID'):'-'}</p></div><div><p class="text-gray-500 font-medium mb-0.5">Lapangan</p><p class="font-bold text-gray-200 capitalize">${venue.surface||'-'}</p></div><div class="col-span-2 pt-3 border-t border-gray-800 flex justify-between items-center"><div><p class="text-gray-500 font-medium mb-0.5">Formasi Home</p><p class="font-black text-sm text-merah">${homeForm}</p></div><div class="text-right"><p class="text-gray-500 font-medium mb-0.5">Formasi Away</p><p class="font-black text-sm text-gray-400">${awayForm}</p></div></div></div></div>`;
+  section.innerHTML = `${scorersHTML}${infoHTML}`;
 }
 
-// ==================== TAB SWITCHING (DETAIL) ====================
-function switchTab(tabName) {
-  document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+function renderEventsTab(fixture, homeId, awayId) {
+  const section = document.getElementById("tab-events");
+  const events = fixture.events || [];
+  if(!events.length){ section.innerHTML=`<div class="bg-kartu border border-gray-800 shadow-sm rounded p-8 text-center text-sm font-medium text-gray-500">Belum ada kejadian tercatat.</div>`; return; }
+  events.sort((a,b)=>a.minute-b.minute);
+  let html = '<div class="relative border-l-2 border-gray-800 ml-4 md:mx-auto md:w-full space-y-5 py-2">';
+  events.forEach(e=>{
+    if(e.type_id===10) return;
+    const isHome = e.participant_id===homeId;
+    let icon="⏱️", detail=e.info||"";
+    if(e.type_id===14){ icon="⚽"; detail=`Gol! ${e.info||''}`; }
+    else if(e.type_id===16){ icon="⚽"; detail="Gol Penalti"; }
+    else if(e.type_id===17){ icon="❌"; detail="Gol Bunuh Diri"; }
+    else if(e.type_id===18){ icon="🔄"; detail=`Keluar: ${e.related_player_name||'-'}`; }
+    else if(e.type_id===19){ icon="🟨"; detail="Kartu Kuning"; }
+    else if(e.type_id===20){ icon="🟥"; detail="Kartu Merah"; }
+    html += `<div class="relative flex items-center ${isHome?'justify-start':'justify-end'} w-full"><div class="absolute -left-[9px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-kartu border-4 border-merah shadow-sm z-10"></div><div class="bg-kartu border border-gray-800 rounded p-3 shadow-sm w-[85%] sm:w-[45%] ${isHome?'ml-5':'mr-5 text-right'} hover:shadow-md transition"><div class="flex items-center gap-2 mb-1 ${isHome?'justify-start':'justify-end'}"><span class="text-xs font-black text-merah bg-gray-800 px-1.5 py-0.5 rounded">${e.minute}'</span><span class="text-sm">${icon}</span><span class="text-xs font-bold text-gray-300 line-clamp-1">${e.player_name||'Pemain'}</span></div><p class="text-[11px] text-gray-500 font-medium line-clamp-1">${detail}</p></div></div>`;
+  });
+  section.innerHTML = html+'</div>';
+}
+
+function renderStatsTab(fixture, homeId, awayId) {
+  const section = document.getElementById("tab-stats");
+  const stats = fixture.statistics || [];
+  if(!stats.length){ section.innerHTML=`<div class="bg-kartu border border-gray-800 shadow-sm rounded p-8 text-center text-sm font-medium text-gray-500">Statistik belum tersedia.</div>`; return; }
+  let unique = [];
+  stats.forEach(s=>{ if(!unique.some(t=>t.id===s.type_id)) unique.push(s.type); });
+  let html = `<div class="bg-kartu border border-gray-800 shadow-sm rounded p-5 space-y-4">`;
+  unique.forEach(type=>{
+    const homeVal = stats.find(s=>s.type_id===type.id && s.participant_id===homeId)?.data?.value??0;
+    const awayVal = stats.find(s=>s.type_id===type.id && s.participant_id===awayId)?.data?.value??0;
+    let total = parseFloat(homeVal)+parseFloat(awayVal);
+    let homePct=50, awayPct=50;
+    if(total>0){
+      if(type.name.includes('%')||type.code.includes('percentage')){ homePct=parseFloat(homeVal); awayPct=parseFloat(awayVal); }
+      else{ homePct=(parseFloat(homeVal)/total)*100; awayPct=(parseFloat(awayVal)/total)*100; }
+    }
+    html+=`<div class="space-y-1.5 py-1"><div class="flex justify-between items-center text-xs font-bold text-gray-300"><span class="w-10 bg-gray-800 py-0.5 rounded text-center">${homeVal}</span><span class="text-gray-500 font-semibold text-[10px] uppercase tracking-wider truncate px-2 text-center flex-1">${type.name}</span><span class="w-10 bg-gray-800 py-0.5 rounded text-center">${awayVal}</span></div><div class="w-full bg-gray-800 h-1.5 rounded-full overflow-hidden flex"><div class="bg-merah h-full transition-all duration-300" style="width: ${homePct}%"></div><div class="bg-gray-600 h-full transition-all duration-300" style="width: ${awayPct}%"></div></div></div>`;
+  });
+  section.innerHTML = html+'</div>';
+}
+
+function renderLineupTab(fixture, homeId, awayId) {
+  const section = document.getElementById("tab-lineup");
+  const lineups = fixture.lineups || [];
+  if(!lineups.length){ section.innerHTML=`<div class="bg-kartu border border-gray-800 shadow-sm rounded p-8 text-center text-sm font-medium text-gray-500">Susunan pemain belum dirilis.</div>`; return; }
+  const homeStart = lineups.filter(l=>l.team_id===homeId && l.type_id===11);
+  const awayStart = lineups.filter(l=>l.team_id===awayId && l.type_id===11);
+  const homeSubs = lineups.filter(l=>l.team_id===homeId && l.type_id===12);
+  const awaySubs = lineups.filter(l=>l.team_id===awayId && l.type_id===12);
+  const genRows = (homeArr, awayArr)=>{
+    let rows='';
+    const maxLen = Math.max(homeArr.length, awayArr.length);
+    for(let i=0;i<maxLen;i++){
+      const h=homeArr[i], a=awayArr[i];
+      rows+=`<div class="grid grid-cols-2 gap-4 py-2.5 border-b border-gray-800 last:border-0 text-xs hover:bg-gray-800/30 transition"><div class="flex items-center gap-2 min-w-0 px-2">${h?`<span class="w-5 h-5 bg-merah/20 text-merah rounded-md font-bold flex items-center justify-center shrink-0 text-[10px]">${h.jersey_number||'-'}</span><span class="font-semibold text-gray-300 truncate">${h.player_name}</span>`:''}</div><div class="flex items-center gap-2 justify-end min-w-0 text-right px-2">${a?`<span class="font-semibold text-gray-300 truncate">${a.player_name}</span><span class="w-5 h-5 bg-gray-800 text-gray-400 rounded-md font-bold flex items-center justify-center shrink-0 text-[10px]">${a.jersey_number||'-'}</span>`:''}</div></div>`;
+    }
+    return rows;
+  };
+  section.innerHTML = `<div class="bg-kartu border border-gray-800 shadow-sm rounded p-4"><h4 class="text-xs font-black text-merah uppercase tracking-wider border-b border-gray-800 pb-3 text-center mb-1">Starting Eleven</h4><div class="flex flex-col">${genRows(homeStart, awayStart)}</div></div><div class="bg-kartu border border-gray-800 shadow-sm rounded p-4"><h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-800 pb-3 text-center mb-1">Cadangan</h4><div class="flex flex-col">${genRows(homeSubs, awaySubs)}</div></div>`;
+}
+
+function switchDetailTab(tabName) {
+  document.querySelectorAll(".tab-content").forEach(el=>el.classList.add("hidden"));
   document.getElementById(`tab-${tabName}`).classList.remove("hidden");
-
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.classList.remove("bg-[#1C1D5F]", "text-white");
-    btn.classList.add("bg-gray-100", "text-gray-500");
-  });
+  document.querySelectorAll(".tab-btn").forEach(btn=>{ btn.classList.remove("bg-merah","text-white"); btn.classList.add("bg-gray-800","text-gray-300"); });
   const activeBtn = document.getElementById(`btn-${tabName}`);
-  activeBtn.classList.remove("bg-gray-100", "text-gray-500");
-  activeBtn.classList.add("bg-[#1C1D5F]", "text-white");
+  if(activeBtn){ activeBtn.classList.remove("bg-gray-800","text-gray-300"); activeBtn.classList.add("bg-merah","text-white"); }
 }
 
-// ==================== INIT ====================
-(function init() {
-  // Set nav active: matches
-  document.getElementById('nav-btn-matches').classList.add('text-[#1C1D5F]');
-  document.getElementById('nav-btn-matches').classList.remove('text-gray-400');
-
-  renderDateSlider();
-  loadMatchesData(formatForApi(selectedDate), false);
-
-  // Auto-refresh match hari ini
-  if (isSameDate(selectedDate, new Date())) {
-    activeRefreshTimer = setInterval(() => loadMatchesData(formatForApi(selectedDate), true), 60000);
-  }
-
-  // Background check live dot setelah 3 detik
-  setTimeout(async () => {
-    const leagues = await getSelectedLeagues();
-    let cnt = 0;
-    for (const l of leagues) {
-      try {
-        const r = await fetch(`https://apiv3.apifootball.com/?action=get_events&league_id=${l.id}&match_live=1&timezone=Asia/Jakarta&APIkey=${apiKey}`);
-        const d = await r.json();
-        if (Array.isArray(d)) cnt += d.filter(m => {
-          const s = (m.match_status||"").toLowerCase();
-          return !["finished","ft","aet","ap","pen.","after pen.","cancelled","postponed","canc","postp"].includes(s) && !s.includes("finish");
-        }).length;
-      } catch {}
+function initVideoSplash() {
+  const splashDiv = document.getElementById('video-splash');
+  const video = document.getElementById('splash-video');
+  if (!splashDiv) return;
+  
+  const removeSplash = () => {
+    if (splashDiv && splashDiv.parentNode) {
+      splashDiv.style.transition = 'opacity 0.5s';
+      splashDiv.style.opacity = '0';
+      setTimeout(() => splashDiv.remove(), 500);
     }
-    if (cnt > 0) document.getElementById('live-indicator-dot').classList.remove('hidden');
-  }, 3000);
-})();
-</script>
+  };
+  
+  // Saat video selesai, hapus splash
+  if (video) {
+    video.addEventListener('ended', removeSplash);
+    // Jika video gagal dimuat atau error, tetap hapus setelah beberapa saat (opsional)
+    video.addEventListener('error', removeSplash);
+  } else {
+    // Fallback kalau gak ada video
+    removeSplash();
+  }
+}
 
+window.addEventListener('DOMContentLoaded', () => {
+  initVideoSplash();
+  fetchAndRenderMatches();
+});
+</script>
+<script>
+  // ==================== GOOGLE SIGN-IN LIBRARY LOADER ====================
+  function loadGoogleScript() {
+    return new Promise((resolve, reject) => {
+      if (window.google?.accounts?.id) return resolve();
+      
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.onload = () => {
+        if (window.google?.accounts?.id) resolve();
+        else reject(new Error('Google Sign-In gagal dimuat'));
+      };
+      script.onerror = () => reject(new Error('Gagal menghubungi Google.'));
+      document.head.appendChild(script);
+    });
+  }
+  
+  // ==================== KONFIGURASI AUTH ====================
+  const GOOGLE_CLIENT_ID = "147017120613-p0fuo93avtdaqarpbnh7sfhks7q8nnbo.apps.googleusercontent.com";
+  
+  // ==================== STATE MANAGEMENT ====================
+  const AUTH_KEY = "indoscore_user";
+  
+  function getStoredUser() {
+    try {
+      const data = localStorage.getItem(AUTH_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  
+  function saveUser(user) {
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+  }
+  
+  function clearUser() {
+    localStorage.removeItem(AUTH_KEY);
+  }
+  
+  function isModalDismissedThisSession() {
+    return sessionStorage.getItem("auth_modal_dismissed") === "true";
+  }
+  
+  function setModalDismissed() {
+    sessionStorage.setItem("auth_modal_dismissed", "true");
+  }
+  
+  // ==================== UI UPDATE ====================
+  function updateHeaderUI(user) {
+    const headerContainer = document.querySelector("#view-matches header .max-w-2xl");
+    if (!headerContainer) return;
+    
+    const existingAuth = document.getElementById("auth-header-section");
+    if (existingAuth) existingAuth.remove();
+    
+    if (user) {
+      const firstName = user.name ? user.name.split(" ")[0] : "User";
+      const authHTML = `
+        <div id="auth-header-section" class="flex items-center justify-between mt-1 pb-2 px-4 relative">
+          <div class="flex items-center gap-2 cursor-pointer" onclick="toggleUserMenu()">
+            <div class="w-8 h-8 rounded-full bg-merah flex items-center justify-center text-white font-bold text-sm">
+              ${firstName.charAt(0).toUpperCase()}
+            </div>
+            <span class="text-sm font-semibold text-white">${firstName}</span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          <div id="user-dropdown" class="hidden absolute right-4 top-14 bg-[#1f1f1f] border border-gray-700 rounded-xl shadow-xl z-50 py-1 w-36 text-sm">
+            <button onclick="handleLogout()" class="block w-full text-left px-4 py-2 hover:bg-gray-800 text-gray-300 font-medium">
+              Keluar
+            </button>
+          </div>
+        </div>
+      `;
+      headerContainer.insertAdjacentHTML("beforeend", authHTML);
+    } else {
+      const authHTML = `
+        <div id="auth-header-section" class="flex justify-end px-4 mt-1 pb-2">
+          <button onclick="openAuthModal()" class="text-xs font-bold bg-gray-800 hover:bg-gray-700 text-white px-4 py-1.5 rounded-full transition active:scale-95">
+            Masuk
+          </button>
+        </div>
+      `;
+      headerContainer.insertAdjacentHTML("beforeend", authHTML);
+    }
+  }
+  
+  function toggleUserMenu() {
+    const dropdown = document.getElementById("user-dropdown");
+    if (dropdown) dropdown.classList.toggle("hidden");
+  }
+  
+  document.addEventListener("click", function(e) {
+    const dropdown = document.getElementById("user-dropdown");
+    if (dropdown && !dropdown.classList.contains("hidden") && !e.target.closest("#auth-header-section")) {
+      dropdown.classList.add("hidden");
+    }
+  });
+  
+  // ==================== MODAL CONTROL ====================
+  function openAuthModal() {
+    document.getElementById("auth-modal-overlay").classList.remove("hidden");
+    document.getElementById("auth-error").classList.add("hidden");
+  }
+  
+  function closeAuthModal() {
+    document.getElementById("auth-modal-overlay").classList.add("hidden");
+  }
+  
+  // ==================== GOOGLE SIGN-IN ====================
+  let usingFallback = false; // Flag untuk mengetahui apakah kita pakai fallback
+  
+  async function initGoogleOneTap() {
+    try {
+      await loadGoogleScript();
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse,
+        auto_select: false,
+        context: "signin"
+      });
+      usingFallback = false;
+      console.log("✅ Google One Tap siap");
+    } catch (err) {
+      console.warn("⚠️ Google One Tap tidak tersedia, akan pakai fallback redirect:", err.message);
+      usingFallback = true;
+    }
+  }
+  
+  async function handleGoogleLogin() {
+    const errorDiv = document.getElementById("auth-error");
+    errorDiv.classList.add("hidden");
+    
+    // Jika kita tahu Google API tidak tersedia, langsung pakai fallback
+    if (usingFallback || !window.google?.accounts?.id) {
+      // Redirect ke backend untuk memulai OAuth server-side
+      window.location.href = `${API_BASE_URL}/auth/google/login`;
+      return;
+    }
+    
+    try {
+      google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          // One Tap tidak bisa ditampilkan, fallback ke redirect
+          console.warn("One Tap tidak bisa ditampilkan, fallback ke redirect");
+          window.location.href = `${API_BASE_URL}/auth/google/login`;
+        } else if (notification.isDismissed()) {
+          // User menutup prompt
+        }
+      });
+    } catch (err) {
+      console.error("Prompt error:", err);
+      // Fallback ke redirect
+      window.location.href = `${API_BASE_URL}/auth/google/login`;
+    }
+  }
+  
+  function handleGoogleResponse(response) {
+    if (response.credential) {
+      authenticateWithBackend(response.credential);
+    } else {
+      showAuthError("Gagal mendapatkan kredensial dari Google.");
+    }
+  }
+  
+  async function authenticateWithBackend(idToken) {
+    const errorDiv = document.getElementById("auth-error");
+    errorDiv.classList.add("hidden");
+    
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id_token: idToken })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok || !data.success) {
+        throw new Error(data.detail || "Login gagal");
+      }
+      
+      saveUser(data.user);
+      closeAuthModal();
+      updateHeaderUI(data.user);
+    } catch (error) {
+      showAuthError(error.message);
+    }
+  }
+  
+  function showAuthError(message) {
+    const errorDiv = document.getElementById("auth-error");
+    document.getElementById("auth-error-text").textContent = message;
+    errorDiv.classList.remove("hidden");
+  }
+  
+  // ==================== LOGOUT ====================
+  function handleLogout() {
+    clearUser();
+    updateHeaderUI(null);
+    const dropdown = document.getElementById("user-dropdown");
+    if (dropdown) dropdown.classList.add("hidden");
+  }
+  
+  // ==================== HANDLE REDIRECT FROM FALLBACK ====================
+  function handleAuthRedirect() {
+    const hash = window.location.hash;
+    if (hash.includes("auth_success=")) {
+      try {
+        const userData = JSON.parse(hash.split("auth_success=")[1].split("&")[0]);
+        saveUser(userData);
+        updateHeaderUI(userData);
+        // Bersihkan hash
+        history.replaceState(null, null, " ");
+        // Tutup modal jika terbuka
+        closeAuthModal();
+      } catch (e) {
+        console.error("Gagal parse user data dari redirect:", e);
+      }
+    } else if (hash.includes("auth_error=")) {
+      const errorMsg = decodeURIComponent(hash.split("auth_error=")[1].split("&")[0]);
+      showAuthError(errorMsg);
+      history.replaceState(null, null, " ");
+      openAuthModal();
+    }
+  }
+  
+  // ==================== INITIALIZATION ====================
+  function initAuth() {
+    // Cek apakah ada data dari redirect fallback
+    handleAuthRedirect();
+    
+    const existingUser = getStoredUser();
+    updateHeaderUI(existingUser);
+    
+    if (!existingUser && !isModalDismissedThisSession()) {
+      setTimeout(() => {
+        if (!getStoredUser()) openAuthModal();
+      }, 7000);
+    }
+    
+    // Inisialisasi Google One Tap (atau deteksi fallback)
+    initGoogleOneTap().catch(() => {});
+    
+    document.getElementById("btn-google-login")?.addEventListener("click", handleGoogleLogin);
+    document.getElementById("btn-skip-auth")?.addEventListener("click", () => {
+      setModalDismissed();
+      closeAuthModal();
+    });
+    
+    document.getElementById("auth-modal-overlay")?.addEventListener("click", function(e) {
+      if (e.target === this) {
+        setModalDismissed();
+        closeAuthModal();
+      }
+    });
+  }
+  
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAuth);
+  } else {
+    initAuth();
+  }
+</script>
 </body>
 </html>
